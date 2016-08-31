@@ -1,4 +1,4 @@
-# Rebus.TODO
+# Rebus.AzureStorage
 
 Provides Azure Storage-based implementations for [Rebus](https://github.com/rebus-org/Rebus) of
 
