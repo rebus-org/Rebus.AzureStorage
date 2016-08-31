@@ -1,5 +1,4 @@
 ﻿using Rebus.AzureStorage.Sagas;
-using Rebus.AzureStorage.Tests.Transport;
 using Rebus.Logging;
 using Rebus.Sagas;
 using Rebus.Tests.Contracts.Sagas;
@@ -8,9 +7,8 @@ namespace Rebus.AzureStorage.Tests.Sagas
 {
     public class AzureStorageSagaStorageFactory : AzureStorageFactoryBase, ISagaStorageFactory//, ISagaSnapshotStorageFactory
     {
-        public static readonly string ContainerName = $"RebusSagaStorageTestContainer";
-        public static readonly string TableName = $"RebusSagaStorageTestTable";
-
+        public static readonly string ContainerName = $"NewRebusSagaStorageTestContainer";
+        public static readonly string TableName = $"NewRebusSagaStorageTestTable";
 
         public ISagaStorage GetSagaStorage()
         {
