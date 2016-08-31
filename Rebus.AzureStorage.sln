@@ -1,0 +1,35 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "stuff", "stuff", "{1ABDD7C1-1F8D-402D-8692-3E4B66962DE0}"
+	ProjectSection(SolutionItems) = preProject
+		CHANGELOG.md = CHANGELOG.md
+		CONTRIBUTING.md = CONTRIBUTING.md
+		LICENSE.md = LICENSE.md
+		README.md = README.md
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rebus.AzureStorage", "Rebus.AzureStorage\Rebus.AzureStorage.csproj", "{F3C81A1A-E167-4277-8CE4-5BB6E52DD237}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rebus.AzureStorage.Tests", "Rebus.AzureStorage.Tests\Rebus.AzureStorage.Tests.csproj", "{7E79A4E0-2DD2-4200-AD03-C6E8379C34CB}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F3C81A1A-E167-4277-8CE4-5BB6E52DD237}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F3C81A1A-E167-4277-8CE4-5BB6E52DD237}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F3C81A1A-E167-4277-8CE4-5BB6E52DD237}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F3C81A1A-E167-4277-8CE4-5BB6E52DD237}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7E79A4E0-2DD2-4200-AD03-C6E8379C34CB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7E79A4E0-2DD2-4200-AD03-C6E8379C34CB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7E79A4E0-2DD2-4200-AD03-C6E8379C34CB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7E79A4E0-2DD2-4200-AD03-C6E8379C34CB}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
