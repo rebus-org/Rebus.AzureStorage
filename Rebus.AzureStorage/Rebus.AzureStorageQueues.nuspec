@@ -14,18 +14,18 @@
     <tags>rebus azure azure-storage-queues azure-table-storage</tags>
     <iconUrl>https://github.com/mookid8000/Rebus/raw/master/artwork/little_rebusbus2_copy-200x200.png</iconUrl>
     <dependencies>
-        <dependency id="Rebus" version="2.0.0-a6" />
-        <dependency id="Microsoft.Azure.KeyVault.Core" version="1.0.0" />
-        <dependency id="Microsoft.Data.Edm" version="5.6.4" />
-        <dependency id="Microsoft.Data.OData" version="5.6.4" />
-        <dependency id="Microsoft.Data.Services.Client" version="5.6.4" />
-        <dependency id="Newtonsoft.Json" version="9.0.1" />
-        <dependency id="System.Spatial" version="5.6.4" />
-        <dependency id="WindowsAzure.Storage" version="7.2.0" />
+      <dependency id="Rebus" version="2.0.0-a9" />
+      <dependency id="Microsoft.Azure.KeyVault.Core" version="1.0.0" />
+      <dependency id="Microsoft.Data.Edm" version="5.6.4" />
+      <dependency id="Microsoft.Data.OData" version="5.6.4" />
+      <dependency id="Microsoft.Data.Services.Client" version="5.6.4" />
+      <dependency id="Newtonsoft.Json" version="9.0.1" />
+      <dependency id="System.Spatial" version="5.6.4" />
+      <dependency id="WindowsAzure.Storage" version="7.2.0" />
     </dependencies>
   </metadata>
   <files>
-    <file src="bin\Release\Rebus.AzureStorage.dll" target="lib\NET45" />
-    <file src="bin\Release\Rebus.AzureStorage.xml" target="lib\NET45" />
+    <file src="bin\Release\Rebus.AzureStorage.dll" target="lib\NET452" />
+    <file src="bin\Release\Rebus.AzureStorage.xml" target="lib\NET452" />
   </files>
 </package>

@@ -7,22 +7,24 @@ using Rebus.AzureStorage.Config;
 using Rebus.Bus;
 using Rebus.Config;
 using Rebus.Messages;
-using Rebus.Tests;
 using Rebus.Tests.Contracts;
 using Rebus.Tests.Contracts.Extensions;
+#pragma warning disable 1998
 
 namespace Rebus.AzureStorage.Tests.Transport
 {
     [TestFixture, Category(TestCategory.Azure)]
     public class NativeDeferTest : FixtureBase
     {
-        static readonly string QueueName = TestConfig.QueueName("input");
+        static readonly string QueueName = TestConfig.GetName("input");
         BuiltinHandlerActivator _activator;
         IBus _bus;
 
         protected override void SetUp()
         {
             _activator = new BuiltinHandlerActivator();
+
+            Using(_activator);
 
             _bus = Configure.With(_activator)
                 .Transport(t => t.UseAzureStorageQueues(AzureConfig.ConnectionString, QueueName))
@@ -31,8 +33,6 @@ namespace Rebus.AzureStorage.Tests.Transport
                     o.LogPipeline();
                 })
                 .Start();
-
-            Using(_bus);
         }
 
         [Test]
@@ -59,12 +59,12 @@ namespace Rebus.AzureStorage.Tests.Transport
 
             var delay = receiveTime - sendTime;
 
-            Console.WriteLine("Message was delayed {0}", delay);
+            Console.WriteLine($"Message was delayed {delay}");
 
             Assert.That(delay, Is.GreaterThan(TimeSpan.FromSeconds(4)), "The message not delayed ~5 seconds as expected!");
             Assert.That(delay, Is.LessThan(TimeSpan.FromSeconds(8)), "The message not delayed ~5 seconds as expected!");
 
-            Assert.That(hadDeferredUntilHeader, Is.False, "Received message still had the '{0}' header - we must remove that", Headers.DeferredUntil);
+            Assert.That(hadDeferredUntilHeader, Is.False, $"Received message still had the '{Headers.DeferredUntil}' header - we must remove that");
         }
 
         class TimedMessage
