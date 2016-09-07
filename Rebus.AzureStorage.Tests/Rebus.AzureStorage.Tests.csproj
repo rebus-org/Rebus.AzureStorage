@@ -112,15 +112,14 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="azure_storage_connection_string.txt" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\Rebus.AzureStorage\Rebus.AzureStorage.csproj">
       <Project>{F3C81A1A-E167-4277-8CE4-5BB6E52DD237}</Project>
       <Name>Rebus.AzureStorage</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <Content Include="azure_storage_connection_string.txt" />
-  </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

@@ -4,7 +4,6 @@ using System.Linq;
 using Microsoft.WindowsAzure.Storage.Blob;
 using Rebus.Auditing.Sagas;
 using Rebus.AzureStorage.Sagas;
-using Rebus.AzureStorage.Tests.Transport;
 using Rebus.Logging;
 using Rebus.Tests.Contracts.Sagas;
 

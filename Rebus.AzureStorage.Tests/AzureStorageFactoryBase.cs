@@ -11,40 +11,39 @@ namespace Rebus.AzureStorage.Tests
                                                  ?? ConnectionStringFromEnvironmentVariable("rebus2_storage_connection_string")
                                                  ?? Throw("Could not find Azure Storage connection string!");
 
-        private static string ConnectionStringFromFileOrNull(string filePath)
+        static string ConnectionStringFromFileOrNull(string filePath)
         {
             if (!File.Exists(filePath))
             {
-                Console.WriteLine("Could not find file {0}", filePath);
+                Console.WriteLine($"Could not find file {filePath}");
                 return null;
             }
 
-            Console.WriteLine("Using Azure Storage connection string from file {0}", filePath);
+            Console.WriteLine($"Using Azure Storage connection string from file {filePath}");
             return File.ReadAllText(filePath);
         }
 
-        private static string ConnectionStringFromEnvironmentVariable(string environmentVariableName)
+        static string ConnectionStringFromEnvironmentVariable(string environmentVariableName)
         {
             var value = Environment.GetEnvironmentVariable(environmentVariableName);
 
             if (value == null)
             {
-                Console.WriteLine("Could not find env variable {0}", environmentVariableName);
+                Console.WriteLine($"Could not find env variable {environmentVariableName}");
                 return null;
             }
 
-            Console.WriteLine("Using Azure Storage connection string from env variable {0}", environmentVariableName);
+            Console.WriteLine($"Using Azure Storage connection string from env variable {environmentVariableName}");
 
             return value;
         }
+
         static string Throw(string message)
         {
             throw new ConfigurationErrorsException(message);
         }
-        protected static CloudStorageAccount StorageAccount
-        {
-            get { return CloudStorageAccount.Parse(ConnectionString); }
-        }
+
+        protected static CloudStorageAccount StorageAccount => CloudStorageAccount.Parse(ConnectionString);
 
         protected static void DropTable(string tableName)
         {
