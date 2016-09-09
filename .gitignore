@@ -28,3 +28,5 @@ _NCrunch_*
 
 
 azure_storage_connection_string.txt
+
+AssemblyInfo_Patch.cs
