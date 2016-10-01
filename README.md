@@ -1,5 +1,7 @@
 # Rebus.AzureStorage
 
+[![install from nuget](https://img.shields.io/nuget/v/Rebus.AzureStorage.svg?style=flat-square)](https://www.nuget.org/packages/Rebus.AzureStorage)
+
 Provides Azure Storage-based implementations for [Rebus](https://github.com/rebus-org/Rebus) of
 
 * data bus storage (in blobs)
