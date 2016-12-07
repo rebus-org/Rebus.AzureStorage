@@ -29,9 +29,9 @@ namespace Rebus.AzureStorage.Tests.Sagas
             var blobClient = StorageAccount.CreateCloudBlobClient();
             var tableClient = StorageAccount.CreateCloudTableClient();
 
-            Task.WaitAll(ClearContainer(blobClient, ContainerName), ClearTable(tableClient, TableName));
+            //Task.WaitAll(ClearContainer(blobClient, ContainerName), ClearTable(tableClient, TableName));
 
-            return;
+            //return;
 
             Task.WaitAll(ClearBlobs(blobClient), ClearTables(tableClient));
         }

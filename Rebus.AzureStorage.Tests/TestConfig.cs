@@ -44,6 +44,5 @@ namespace Rebus.AzureStorage.Tests
         {
             throw new ConfigurationErrorsException(message);
         }
-
     }
 }
