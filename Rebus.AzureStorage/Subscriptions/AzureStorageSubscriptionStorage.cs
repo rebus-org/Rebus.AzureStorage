@@ -30,7 +30,7 @@ namespace Rebus.AzureStorage.Subscriptions
 
         public void EnsureCreated()
         {
-            _loggerFactory.GetCurrentClassLogger().Info("Auto creating table {0}", _tableName);
+            _loggerFactory.GetLogger<AzureStorageSubscriptionStorage>().Info("Auto creating table {0}", _tableName);
             var client = _cloudStorageAccount.CreateCloudTableClient();
             var t = client.GetTableReference(_tableName);
             t.CreateIfNotExists();

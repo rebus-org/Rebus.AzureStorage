@@ -45,7 +45,7 @@ namespace Rebus.AzureStorage.Sagas
 
             _tableReference = cloudStorageAccount.CreateCloudTableClient().GetTableReference(tableName.ToLowerInvariant());
             _containerReference = cloudStorageAccount.CreateCloudBlobClient().GetContainerReference(containerName.ToLowerInvariant());
-            _log = loggerFactory.GetCurrentClassLogger();
+            _log = loggerFactory.GetLogger<AzureStorageSagaStorage>();
         }
 
         /// <summary>

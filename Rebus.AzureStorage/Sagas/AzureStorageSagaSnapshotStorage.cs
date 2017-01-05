@@ -32,9 +32,8 @@ namespace Rebus.AzureStorage.Sagas
             if (storageAccount == null) throw new ArgumentNullException(nameof(storageAccount));
             if (loggerFactory == null) throw new ArgumentNullException(nameof(loggerFactory));
 
-            _log = loggerFactory.GetCurrentClassLogger();
-            _container = storageAccount.CreateCloudBlobClient()
-                .GetContainerReference(containerName.ToLowerInvariant());
+            _log = loggerFactory.GetLogger<AzureStorageSagaSnapshotStorage>();
+            _container = storageAccount.CreateCloudBlobClient().GetContainerReference(containerName.ToLowerInvariant());
         }
 
         /// <summary>

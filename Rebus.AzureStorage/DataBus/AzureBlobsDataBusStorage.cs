@@ -33,7 +33,7 @@ namespace Rebus.AzureStorage.DataBus
             if (loggerFactory == null) throw new ArgumentNullException(nameof(loggerFactory));
             _containerName = containerName.ToLowerInvariant();
             _client = storageAccount.CreateCloudBlobClient();
-            _log = loggerFactory.GetCurrentClassLogger();
+            _log = loggerFactory.GetLogger<AzureBlobsDataBusStorage>();
         }
 
         /// <summary>
