@@ -72,6 +72,7 @@ namespace Rebus.AzureStorage.Tests.Sagas
                     })
             );
 
+            Console.WriteLine($"Deleting container '{containerReference.Name}'");
             await containerReference.DeleteAsync();
         }
 
