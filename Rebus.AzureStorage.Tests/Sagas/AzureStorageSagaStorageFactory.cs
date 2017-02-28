@@ -71,6 +71,8 @@ namespace Rebus.AzureStorage.Tests.Sagas
                         await cloudBlob.DeleteIfExistsAsync();
                     })
             );
+
+            await containerReference.DeleteAsync();
         }
 
         static async Task ClearTable(CloudTableClient client, string tableName)
