@@ -83,7 +83,6 @@ namespace Rebus.AzureStorage.Config
         static void Register(StandardConfigurer<ITransport> configurer, string inputQueueAddress, CloudStorageAccount storageAccount)
         {
             if (configurer == null) throw new ArgumentNullException(nameof(configurer));
-            if (inputQueueAddress == null) throw new ArgumentNullException(nameof(inputQueueAddress));
             if (storageAccount == null) throw new ArgumentNullException(nameof(storageAccount));
 
             configurer.Register(c =>

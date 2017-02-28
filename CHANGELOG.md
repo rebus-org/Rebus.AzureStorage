@@ -15,3 +15,7 @@
 ## 3.0.0-b01
 
 * Update to Rebus 3
+
+## 3.0.0-b02
+
+* Fix configuration API that accidentally threw an `ArgumentNullException` when it shouldn't have
