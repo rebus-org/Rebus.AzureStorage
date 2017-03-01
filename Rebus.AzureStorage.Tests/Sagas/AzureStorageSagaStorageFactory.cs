@@ -12,12 +12,22 @@ namespace Rebus.AzureStorage.Tests.Sagas
 {
     public class AzureStorageSagaStorageFactory : AzureStorageFactoryBase, ISagaStorageFactory//, ISagaSnapshotStorageFactory
     {
-        public static readonly string ContainerName = "newrebussagastoragetestcontainer";
-        public static readonly string TableName = "newrebussagastoragetesttable";
+        //public static readonly string ContainerName = "newrebussagastoragetestcontainer";
+        //public static readonly string TableName = "newrebussagastoragetesttable";
+
+        static int _nameIndex = 1;
+
+        string _containerName;
+        string _tableName;
 
         public ISagaStorage GetSagaStorage()
         {
-            var storage = new AzureStorageSagaStorage(StorageAccount, new ConsoleLoggerFactory(false), TableName, ContainerName);
+            var index = _nameIndex++;
+
+            _containerName = $"newrebussagastoragetestcontainer{index}";
+            _tableName = $"newrebussagastoragetesttable{index}";
+
+            var storage = new AzureStorageSagaStorage(StorageAccount, new ConsoleLoggerFactory(false), _tableName, _containerName);
 
             storage.Initialize();
 
@@ -71,9 +81,6 @@ namespace Rebus.AzureStorage.Tests.Sagas
                         await cloudBlob.DeleteIfExistsAsync();
                     })
             );
-
-            Console.WriteLine($"Deleting container '{containerReference.Name}'");
-            await containerReference.DeleteAsync();
         }
 
         static async Task ClearTable(CloudTableClient client, string tableName)
