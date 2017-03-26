@@ -89,10 +89,7 @@
     <Compile Include="DataBus\AzureBlobsDataBusStorageFactory.cs" />
     <Compile Include="DataBus\AzureBlobsDataBusStorageTest.cs" />
     <Compile Include="TestConfig.cs" />
-    <Compile Include="Sagas\AzureStorageConcurrencyHandling.cs" />
     <Compile Include="Sagas\AzureStorageSagaSnapshotStorageFactory.cs" />
-    <Compile Include="Sagas\AzureStorageSagaStorageBasicLoadAndSaveAndFindOperations.cs" />
-    <Compile Include="Sagas\AzureStorageSagaStorageFactory.cs" />
     <Compile Include="Sagas\AzureStorageSnapshotStorageTests.cs" />
     <Compile Include="Subscriptions\AzureStorageSubscriptionStorageFactory.cs" />
     <Compile Include="AzureStorageFactoryBase.cs" />

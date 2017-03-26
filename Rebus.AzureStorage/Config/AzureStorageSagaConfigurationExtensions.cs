@@ -4,7 +4,6 @@ using Rebus.Auditing.Sagas;
 using Rebus.AzureStorage.Sagas;
 using Rebus.Config;
 using Rebus.Logging;
-using Rebus.Sagas;
 
 namespace Rebus.AzureStorage.Config
 {
@@ -13,29 +12,6 @@ namespace Rebus.AzureStorage.Config
     /// </summary>
     public static class AzureStorageSagaConfigurationExtensions
     {
-        /// <summary>
-        /// Configures Rebus to use a combination of blob and table storage to store sagas
-        /// </summary>
-        public static void StoreInAzureStorage(this StandardConfigurer<ISagaStorage> configurer,
-            string storageAccountConnectionStringOrName,
-            string tableName = "RebusSagaIndex",
-            string containerName = "RebusSagaStorage")
-        {
-            var storageAccount = AzureConfigurationHelper.GetStorageAccount(storageAccountConnectionStringOrName);
-
-            StoreInAzureStorage(configurer, storageAccount, tableName, containerName);
-        }
-
-        /// <summary>
-        /// Configures Rebus to use a combination of blob and table storage to store sagas
-        /// </summary>
-        public static void StoreInAzureStorage(this StandardConfigurer<ISagaStorage> configurer, CloudStorageAccount cloudStorageAccount,
-            string tableName = "RebusSagaIndex",
-            string containerName = "RebusSagaStorage")
-        {
-            configurer.Register(c => new AzureStorageSagaStorage(cloudStorageAccount, c.Get<IRebusLoggerFactory>(), tableName, containerName));
-        }
-
         /// <summary>
         /// Configures Rebus to store saga data snapshots in blob storage
         /// </summary>

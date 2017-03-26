@@ -79,13 +79,10 @@
     <Compile Include="Config\AzureConfigurationHelper.cs" />
     <Compile Include="DataBus\AzureBlobsDataBusStorage.cs" />
     <Compile Include="DataBus\AzureBlobsDataBusStorageConfigurationExtensions.cs" />
-    <Compile Include="Config\AzureConfigurationExtensions.cs" />
     <Compile Include="Config\AzureStorageSagaConfigurationExtensions.cs" />
     <Compile Include="Config\AzureStorageSubscriptionConfigurationExtensions.cs" />
     <Compile Include="Entities\Subscription.cs" />
     <Compile Include="Sagas\AzureStorageSagaSnapshotStorage.cs" />
-    <Compile Include="Sagas\AzureStorageSagaStorage.cs" />
-    <Compile Include="Sagas\SagaLease.cs" />
     <Compile Include="Subscriptions\AzureStorageSubscriptionStorage.cs" />
     <Compile Include="TableExtensions.cs" />
     <Compile Include="Transport\AzureStorageQueuesTransport.cs" />
