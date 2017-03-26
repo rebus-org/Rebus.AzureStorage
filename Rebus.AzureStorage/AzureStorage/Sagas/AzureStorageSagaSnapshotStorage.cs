@@ -7,6 +7,7 @@ using Microsoft.WindowsAzure.Storage.Blob;
 using Microsoft.WindowsAzure.Storage.RetryPolicies;
 using Newtonsoft.Json;
 using Rebus.Auditing.Sagas;
+using Rebus.AzureStorage.DataBus;
 using Rebus.Logging;
 using Rebus.Sagas;
 
@@ -68,7 +69,7 @@ namespace Rebus.AzureStorage.Sagas
 
             while (true)
             {
-                var result = AsyncHelpers.GetResult(() => _container.ListBlobsSegmentedAsync(continuationToken));
+                var result = AsyncHelpers.GetResult(() => _container.ListBlobsSegmentedAsync("", true, BlobListingDetails.Metadata, 100, continuationToken, DefaultRequestOptions, DefaultOperationContext));
 
                 foreach (var item in result.Results)
                 {
