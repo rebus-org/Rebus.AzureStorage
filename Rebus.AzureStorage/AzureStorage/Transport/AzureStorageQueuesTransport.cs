@@ -216,7 +216,7 @@ namespace Rebus.AzureStorage.Transport
             {
                 while (true)
                 {
-                    var messages = AsyncHelpers.GetResult(() => queue.GetMessagesAsync(100)).ToList();
+                    var messages = AsyncHelpers.GetResult(() => queue.GetMessagesAsync(10)).ToList();
 
                     if (!messages.Any()) break;
 
