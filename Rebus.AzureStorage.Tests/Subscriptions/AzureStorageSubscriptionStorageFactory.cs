@@ -12,24 +12,14 @@ namespace Rebus.AzureStorage.Tests.Subscriptions
 
         public ISubscriptionStorage Create()
         {
-            return new AzureStorageSubscriptionStorage(StorageAccount, new ConsoleLoggerFactory(false), false, TableName);
+            var subscriptionStorage = new AzureStorageSubscriptionStorage(StorageAccount, new ConsoleLoggerFactory(false), false, TableName);
+            subscriptionStorage.Initialize();
+            return subscriptionStorage;
         }
 
         public void Cleanup()
         {
             DropTable(TableName);
-        }
-
-        public static void CreateTables()
-        {
-            var sub = new AzureStorageSubscriptionStorage(StorageAccount, new ConsoleLoggerFactory(false),  false, TableName);
-            sub.Initialize();
-        }
-
-        public static void DropTables()
-        {
-            var sub = new AzureStorageSubscriptionStorage(StorageAccount, new ConsoleLoggerFactory(false),  false, TableName);
-            sub.DropTables();
         }
     }
 }
