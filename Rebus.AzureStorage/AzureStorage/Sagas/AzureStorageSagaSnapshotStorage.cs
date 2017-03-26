@@ -77,6 +77,8 @@ namespace Rebus.AzureStorage.Sagas
                 }
 
                 continuationToken = result.ContinuationToken;
+
+                if (continuationToken == null) break;
             }
         }
 
