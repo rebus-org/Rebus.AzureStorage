@@ -5,7 +5,7 @@ using Microsoft.WindowsAzure.Storage.Table;
 
 namespace Rebus.AzureStorage
 {
-    internal static class TableExtensions
+    static class TableExtensions
     {
         public static async Task<IList<T>> ExecuteQueryAsync<T>(this CloudTable table, TableQuery<T> query, TableRequestOptions requestOptions, OperationContext operationContext) where T : ITableEntity, new()
         {

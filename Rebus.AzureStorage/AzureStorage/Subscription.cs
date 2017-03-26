@@ -2,13 +2,14 @@
 
 namespace Rebus.AzureStorage.Entities
 {
-    public class AzureStorageSubscription : TableEntity
+    class AzureStorageSubscription : TableEntity
     {
         public AzureStorageSubscription(string topic, string subscriberAddress)
         {
             PartitionKey = topic;
             RowKey = subscriberAddress;
         }
+
         public AzureStorageSubscription() { }
     }
 }

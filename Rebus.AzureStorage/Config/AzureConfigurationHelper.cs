@@ -1,6 +1,5 @@
 ﻿using System;
 using Microsoft.WindowsAzure.Storage;
-using Rebus.Exceptions;
 
 namespace Rebus.Config
 {
@@ -21,7 +20,7 @@ namespace Rebus.Config
                 var connectionStringSettings = System.Configuration.ConfigurationManager.ConnectionStrings[storageAccountConnectionStringOrName];
                 if (connectionStringSettings == null)
                 {
-                    throw new RebusConfigurationException($"Could not find connection string named '{storageAccountConnectionStringOrName}' in the current application configuration file");
+                    throw new Exceptions.RebusConfigurationException($"Could not find connection string named '{storageAccountConnectionStringOrName}' in the current application configuration file");
                 }
                 storageAccountConnectionStringOrName = connectionStringSettings.ConnectionString;
             }

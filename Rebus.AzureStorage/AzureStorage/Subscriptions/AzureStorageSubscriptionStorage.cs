@@ -5,6 +5,7 @@ using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.RetryPolicies;
 using Microsoft.WindowsAzure.Storage.Table;
 using Rebus.AzureStorage.Entities;
+using Rebus.Bus;
 using Rebus.Exceptions;
 using Rebus.Logging;
 using Rebus.Subscriptions;
@@ -14,11 +15,11 @@ namespace Rebus.AzureStorage.Subscriptions
     /// <summary>
     /// Implementation of <see cref="ISubscriptionStorage"/> that uses table storage to store subscriptions
     /// </summary>
-    public class AzureStorageSubscriptionStorage : ISubscriptionStorage
+    public class AzureStorageSubscriptionStorage : ISubscriptionStorage, IInitializable
     {
         readonly CloudStorageAccount _cloudStorageAccount;
-        readonly IRebusLoggerFactory _loggerFactory;
         readonly string _tableName;
+        readonly ILog _log;
 
         /// <summary>
         /// Creates the subscription storage
@@ -30,21 +31,24 @@ namespace Rebus.AzureStorage.Subscriptions
         {
             IsCentralized = isCentralized;
             _cloudStorageAccount = cloudStorageAccount;
-            _loggerFactory = loggerFactory;
+            _log = loggerFactory.GetLogger<AzureStorageSubscriptionStorage>();
             _tableName = tableName;
         }
 
-        public void EnsureCreated()
+        /// <summary>
+        /// Initializes the subscription storage by ensuring that the necessary table is created
+        /// </summary>
+        public void Initialize()
         {
-            _loggerFactory.GetLogger<AzureStorageSubscriptionStorage>().Info("Auto creating table {0}", _tableName);
+            _log.Info("Auto creating table {0}", _tableName);
             var client = _cloudStorageAccount.CreateCloudTableClient();
             var tableReference = client.GetTableReference(_tableName);
             AsyncHelpers.RunSync(() => tableReference.CreateIfNotExistsAsync());
         }
 
-        // PartitionKey = Topic
-        // RowKey = Address
-
+        /// <summary>
+        /// Gets all subscribers by getting row IDs from the partition named after the given <paramref name="topic"/>
+        /// </summary>
         public async Task<string[]> GetSubscriberAddresses(string topic)
         {
             try
@@ -63,6 +67,10 @@ namespace Rebus.AzureStorage.Subscriptions
             }
         }
 
+        /// <summary>
+        /// Registers the given <paramref name="subscriberAddress"/> as a subscriber of the topic named <paramref name="topic"/>
+        /// by inserting a row with the address as the row ID under a partition key named after the topic
+        /// </summary>
         public async Task RegisterSubscriber(string topic, string subscriberAddress)
         {
             try
@@ -79,6 +87,10 @@ namespace Rebus.AzureStorage.Subscriptions
             }
         }
 
+        /// <summary>
+        /// Unregisters the given <paramref name="subscriberAddress"/> as a subscriber of the topic named <paramref name="topic"/>
+        /// by removing the row with the address as the row ID under a partition key named after the topic
+        /// </summary>
         public async Task UnregisterSubscriber(string topic, string subscriberAddress)
         {
             try
@@ -99,6 +111,9 @@ namespace Rebus.AzureStorage.Subscriptions
         /// </summary>
         public bool IsCentralized { get; }
 
+        /// <summary>
+        /// Drops the table used by the subscription storage
+        /// </summary>
         public void DropTables()
         {
             var client = _cloudStorageAccount.CreateCloudTableClient();

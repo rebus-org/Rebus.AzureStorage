@@ -177,8 +177,12 @@ namespace Rebus.AzureStorage.Transport
             public byte[] Body { get; set; }
         }
 
+        /// <inheritdoc />
         public string Address => _inputQueueName;
 
+        /// <summary>
+        /// Initializes the transport by creating the input queue if necessary
+        /// </summary>
         public void Initialize()
         {
             if (_inputQueueName != null)

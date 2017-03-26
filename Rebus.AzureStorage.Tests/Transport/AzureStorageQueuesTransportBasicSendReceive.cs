@@ -6,6 +6,7 @@ using Rebus.AzureStorage.Transport;
 using Rebus.Messages;
 using Rebus.Tests.Contracts.Transports;
 using Rebus.Time;
+#pragma warning disable 1998
 
 namespace Rebus.AzureStorage.Tests.Transport
 {

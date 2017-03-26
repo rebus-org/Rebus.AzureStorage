@@ -23,7 +23,7 @@ namespace Rebus.AzureStorage.Tests.Subscriptions
         public static void CreateTables()
         {
             var sub = new AzureStorageSubscriptionStorage(StorageAccount, new ConsoleLoggerFactory(false),  false, TableName);
-            sub.EnsureCreated();
+            sub.Initialize();
         }
 
         public static void DropTables()
