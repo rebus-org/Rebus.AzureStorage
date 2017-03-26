@@ -38,4 +38,9 @@
     <PackageReference Include="rebus" Version="4.0.0-b05" />
     <PackageReference Include="rebus.tests.contracts" Version="4.0.0-b04" />
   </ItemGroup>
+  <ItemGroup>
+    <None Update="azure_storage_connection_string.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 </Project>

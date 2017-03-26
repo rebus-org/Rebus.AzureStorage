@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.RetryPolicies;
 using Microsoft.WindowsAzure.Storage.Table;
-using Rebus.AzureStorage.Entities;
 using Rebus.Bus;
 using Rebus.Exceptions;
 using Rebus.Logging;

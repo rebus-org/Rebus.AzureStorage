@@ -1,10 +1,10 @@
 ﻿using System;
 using Microsoft.WindowsAzure.Storage;
-using Rebus.Config;
+using Rebus.AzureStorage.DataBus;
 using Rebus.DataBus;
 using Rebus.Logging;
 
-namespace Rebus.AzureStorage.DataBus
+namespace Rebus.Config
 {
     /// <summary>
     /// Configuration extensions for Azure-based data bus storage

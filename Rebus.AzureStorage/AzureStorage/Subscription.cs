@@ -1,6 +1,6 @@
 ﻿using Microsoft.WindowsAzure.Storage.Table;
 
-namespace Rebus.AzureStorage.Entities
+namespace Rebus.AzureStorage
 {
     class AzureStorageSubscription : TableEntity
     {
