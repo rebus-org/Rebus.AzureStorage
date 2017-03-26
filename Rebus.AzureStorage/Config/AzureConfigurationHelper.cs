@@ -1,27 +1,31 @@
 ﻿using System;
-using System.Configuration;
 using Microsoft.WindowsAzure.Storage;
+using Rebus.Exceptions;
 
-namespace Rebus.AzureStorage.Config
+namespace Rebus.Config
 {
     class AzureConfigurationHelper
     {
         public static CloudStorageAccount GetStorageAccount(string storageAccountConnectionStringOrName)
         {
             if (storageAccountConnectionStringOrName == null)
+            {
                 throw new ArgumentNullException(nameof(storageAccountConnectionStringOrName));
+            }
 
+#if NET45
             var isConnectionString = storageAccountConnectionStringOrName.ToLowerInvariant().Replace(" ", "").Contains("accountkey=");
 
             if (!isConnectionString)
             {
-                var connectionStringSettings = ConfigurationManager.ConnectionStrings[storageAccountConnectionStringOrName];
+                var connectionStringSettings = System.Configuration.ConfigurationManager.ConnectionStrings[storageAccountConnectionStringOrName];
                 if (connectionStringSettings == null)
                 {
-                    throw new ConfigurationErrorsException($"Could not find connection string named '{storageAccountConnectionStringOrName}' in the current application configuration file");
+                    throw new RebusConfigurationException($"Could not find connection string named '{storageAccountConnectionStringOrName}' in the current application configuration file");
                 }
                 storageAccountConnectionStringOrName = connectionStringSettings.ConnectionString;
             }
+#endif
 
             var storageAccount = CloudStorageAccount.Parse(storageAccountConnectionStringOrName);
             return storageAccount;

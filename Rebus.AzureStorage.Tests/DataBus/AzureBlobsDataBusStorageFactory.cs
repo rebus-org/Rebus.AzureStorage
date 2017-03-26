@@ -21,9 +21,9 @@ namespace Rebus.AzureStorage.Tests.DataBus
         {
             Console.WriteLine($"Deleting container {_containerName} (if it exists)");
 
-            AzureConfig.StorageAccount.CreateCloudBlobClient()
+            AsyncHelpers.RunSync(() => AzureConfig.StorageAccount.CreateCloudBlobClient()
                 .GetContainerReference(_containerName)
-                .DeleteIfExists();
+                .DeleteIfExistsAsync());
         }
     }
 }

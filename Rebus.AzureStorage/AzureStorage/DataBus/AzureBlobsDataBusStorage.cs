@@ -5,6 +5,7 @@ using System.Net;
 using System.Threading.Tasks;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
+using Microsoft.WindowsAzure.Storage.RetryPolicies;
 using Rebus.DataBus;
 using Rebus.Extensions;
 using Rebus.Logging;
@@ -94,7 +95,13 @@ namespace Rebus.AzureStorage.DataBus
 
                 await UpdateLastReadTime(blob);
 
-                return blob.OpenRead();
+                return AsyncHelpers.GetResult(() =>
+                {
+                    var accessCondition = AccessCondition.GenerateEmptyCondition();
+                    var requestOptions = new BlobRequestOptions { RetryPolicy = new ExponentialRetry() };
+                    var operationContext = new OperationContext();
+                    return blob.OpenReadAsync(accessCondition, requestOptions, operationContext);
+                });
             }
             catch (StorageException exception) when (exception.IsStatus(HttpStatusCode.NotFound))
             {

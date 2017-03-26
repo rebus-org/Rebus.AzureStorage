@@ -64,7 +64,19 @@ namespace Rebus.AzureStorage.Sagas
         /// </summary>
         public IEnumerable<IListBlobItem> ListAllBlobs()
         {
-            return _container.ListBlobs(useFlatBlobListing: true);
+            BlobContinuationToken continuationToken = null;
+
+            while (true)
+            {
+                var result = AsyncHelpers.GetResult(() => _container.ListBlobsSegmentedAsync(continuationToken));
+
+                foreach (var item in result.Results)
+                {
+                    yield return item;
+                }
+
+                continuationToken = result.ContinuationToken;
+            }
         }
 
         /// <summary>
@@ -72,17 +84,17 @@ namespace Rebus.AzureStorage.Sagas
         /// </summary>
         public void EnsureContainerExists()
         {
-            if (!_container.Exists())
+            if (!AsyncHelpers.GetResult(() => _container.ExistsAsync()))
             {
                 _log.Info("Container {0} did not exist - it will be created now", _container.Name);
-                _container.CreateIfNotExists();
+                AsyncHelpers.RunSync(() => _container.CreateIfNotExistsAsync());
             }
         }
 
         static string GetBlobData(CloudBlockBlob cloudBlockBlob)
         {
-            return cloudBlockBlob.DownloadText(TextEncoding, new AccessCondition(),
-                new BlobRequestOptions { RetryPolicy = new ExponentialRetry() }, new OperationContext());
+            return AsyncHelpers.GetResult(() => cloudBlockBlob.DownloadTextAsync(TextEncoding, new AccessCondition(),
+                new BlobRequestOptions { RetryPolicy = new ExponentialRetry() }, new OperationContext()));
         }
 
         /// <summary>
@@ -112,8 +124,11 @@ namespace Rebus.AzureStorage.Sagas
         /// </summary>
         public void DropAndRecreateContainer()
         {
-            _container.DeleteIfExists();
-            _container.CreateIfNotExists();
+            AsyncHelpers.RunSync(async () =>
+            {
+                await _container.DeleteIfExistsAsync();
+                await _container.CreateIfNotExistsAsync();
+            });
         }
     }
 }

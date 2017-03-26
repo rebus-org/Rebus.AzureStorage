@@ -2,10 +2,9 @@ using System;
 using Microsoft.WindowsAzure.Storage;
 using Rebus.Auditing.Sagas;
 using Rebus.AzureStorage.Sagas;
-using Rebus.Config;
 using Rebus.Logging;
 
-namespace Rebus.AzureStorage.Config
+namespace Rebus.Config
 {
     /// <summary>
     /// Configuration extensions for Azure storage

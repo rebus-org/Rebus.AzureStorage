@@ -1,11 +1,10 @@
 ﻿using System;
 using Microsoft.WindowsAzure.Storage;
 using Rebus.AzureStorage.Subscriptions;
-using Rebus.Config;
 using Rebus.Logging;
 using Rebus.Subscriptions;
 
-namespace Rebus.AzureStorage.Config
+namespace Rebus.Config
 {
     /// <summary>
     /// Configuration extensions for Azure storage-based subscriptions

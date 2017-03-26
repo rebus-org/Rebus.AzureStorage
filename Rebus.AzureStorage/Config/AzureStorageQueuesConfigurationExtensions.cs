@@ -1,15 +1,15 @@
 ﻿using System;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Auth;
+using Rebus.AzureStorage;
 using Rebus.AzureStorage.Transport;
-using Rebus.Config;
 using Rebus.Logging;
 using Rebus.Pipeline;
 using Rebus.Pipeline.Receive;
 using Rebus.Timeouts;
 using Rebus.Transport;
 
-namespace Rebus.AzureStorage.Config
+namespace Rebus.Config
 {
     /// <summary>
     /// Configuration extensions for the Aure Storage Queue transport

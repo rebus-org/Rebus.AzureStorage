@@ -9,7 +9,7 @@ namespace Rebus.AzureStorage.Tests.Transport
 {
     public class AzureStorageQueuesTransportFactory : ITransportFactory
     {
-        readonly ConcurrentDictionary<string, AzureStorageQueuesTransport> _transports = new ConcurrentDictionary<string, AzureStorageQueuesTransport>(StringComparer.InvariantCultureIgnoreCase);
+        readonly ConcurrentDictionary<string, AzureStorageQueuesTransport> _transports = new ConcurrentDictionary<string, AzureStorageQueuesTransport>(StringComparer.OrdinalIgnoreCase);
 
         public ITransport CreateOneWayClient()
         {

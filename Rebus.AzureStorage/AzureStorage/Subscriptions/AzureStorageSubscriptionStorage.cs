@@ -11,12 +11,18 @@ using Rebus.Subscriptions;
 
 namespace Rebus.AzureStorage.Subscriptions
 {
+    /// <summary>
+    /// Implementation of <see cref="ISubscriptionStorage"/> that uses table storage to store subscriptions
+    /// </summary>
     public class AzureStorageSubscriptionStorage : ISubscriptionStorage
     {
         readonly CloudStorageAccount _cloudStorageAccount;
         readonly IRebusLoggerFactory _loggerFactory;
         readonly string _tableName;
 
+        /// <summary>
+        /// Creates the subscription storage
+        /// </summary>
         public AzureStorageSubscriptionStorage(CloudStorageAccount cloudStorageAccount,
             IRebusLoggerFactory loggerFactory,
             bool isCentralized = false,
@@ -32,14 +38,8 @@ namespace Rebus.AzureStorage.Subscriptions
         {
             _loggerFactory.GetLogger<AzureStorageSubscriptionStorage>().Info("Auto creating table {0}", _tableName);
             var client = _cloudStorageAccount.CreateCloudTableClient();
-            var t = client.GetTableReference(_tableName);
-            t.CreateIfNotExists();
-        }
-
-        CloudTable GetTable()
-        {
-            var client = _cloudStorageAccount.CreateCloudTableClient();
-            return client.GetTableReference(_tableName);
+            var tableReference = client.GetTableReference(_tableName);
+            AsyncHelpers.RunSync(() => tableReference.CreateIfNotExistsAsync());
         }
 
         // PartitionKey = Topic
@@ -49,16 +49,15 @@ namespace Rebus.AzureStorage.Subscriptions
         {
             try
             {
-                var query =
-                    new TableQuery<AzureStorageSubscription>().Where(TableQuery.GenerateFilterCondition("PartitionKey",
-                        QueryComparisons.Equal, topic));
-                var t = GetTable();
+                var condition = TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, topic);
+                var query = new TableQuery<AzureStorageSubscription>().Where(condition);
+                var table = GetTable();
                 var operationContext = new OperationContext();
                 var tableRequestOptions = new TableRequestOptions { RetryPolicy = new ExponentialRetry() };
-                var items = await t.ExecuteQueryAsync(query, tableRequestOptions, operationContext);
+                var items = await table.ExecuteQueryAsync(query, tableRequestOptions, operationContext);
                 return items.Select(i => i.RowKey).ToArray();
             }
-            catch (Microsoft.WindowsAzure.Storage.StorageException exception)
+            catch (StorageException exception)
             {
                 throw new RebusApplicationException(exception, $"Could not get subscriber addresses for '{topic}'");
             }
@@ -68,11 +67,11 @@ namespace Rebus.AzureStorage.Subscriptions
         {
             try
             {
-                var entity = new Entities.AzureStorageSubscription(topic, subscriberAddress);
-                var t = GetTable();
+                var entity = new AzureStorageSubscription(topic, subscriberAddress);
+                var table = GetTable();
                 var operationContext = new OperationContext();
                 var tableRequestOptions = new TableRequestOptions { RetryPolicy = new ExponentialRetry() };
-                var res = await t.ExecuteAsync(TableOperation.InsertOrReplace(entity), tableRequestOptions, operationContext);
+                var result = await table.ExecuteAsync(TableOperation.InsertOrReplace(entity), tableRequestOptions, operationContext);
             }
             catch (Exception exception)
             {
@@ -84,10 +83,10 @@ namespace Rebus.AzureStorage.Subscriptions
         {
             try
             {
-                var entity = new Entities.AzureStorageSubscription(topic, subscriberAddress) { ETag = "*" };
-                var t = GetTable();
+                var entity = new AzureStorageSubscription(topic, subscriberAddress) { ETag = "*" };
+                var tableReference = GetTable();
                 var operationContext = new OperationContext();
-                var res = await t.ExecuteAsync(TableOperation.Delete(entity), new TableRequestOptions { RetryPolicy = new ExponentialRetry() }, operationContext);
+                var result = await tableReference.ExecuteAsync(TableOperation.Delete(entity), new TableRequestOptions { RetryPolicy = new ExponentialRetry() }, operationContext);
             }
             catch (Exception exception)
             {
@@ -103,8 +102,14 @@ namespace Rebus.AzureStorage.Subscriptions
         public void DropTables()
         {
             var client = _cloudStorageAccount.CreateCloudTableClient();
-            var t = client.GetTableReference(_tableName);
-            t.DeleteIfExists();
+            var tableReference = client.GetTableReference(_tableName);
+            AsyncHelpers.RunSync(() => tableReference.DeleteIfExistsAsync());
+        }
+
+        CloudTable GetTable()
+        {
+            var client = _cloudStorageAccount.CreateCloudTableClient();
+            return client.GetTableReference(_tableName);
         }
     }
 }

@@ -1,7 +1,6 @@
 ﻿using System;
 using Microsoft.WindowsAzure.Storage;
 using Rebus.Activation;
-using Rebus.AzureStorage.Config;
 using Rebus.Config;
 using Rebus.Routing.TypeBased;
 #pragma warning disable 1998
@@ -12,7 +11,7 @@ namespace SmallDemo
     {
         static void Main()
         {
-                var storageAccount = CloudStorageAccount.DevelopmentStorageAccount;
+            var storageAccount = CloudStorageAccount.DevelopmentStorageAccount;
 
             using (var clientActivator = new BuiltinHandlerActivator())
             {
