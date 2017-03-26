@@ -69,7 +69,7 @@ namespace Rebus.AzureStorage.Sagas
 
             while (true)
             {
-                var result = AsyncHelpers.GetResult(() => _container.ListBlobsSegmentedAsync("", true, BlobListingDetails.Metadata, 100, continuationToken, DefaultRequestOptions, DefaultOperationContext));
+                var result = AsyncHelpers.GetResult(() => _container.ListBlobsSegmentedAsync("", true, BlobListingDetails.None, 100, continuationToken, DefaultRequestOptions, DefaultOperationContext));
 
                 foreach (var item in result.Results)
                 {
