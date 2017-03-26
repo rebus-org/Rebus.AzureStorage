@@ -12,7 +12,7 @@ using Rebus.Tests.Contracts.Extensions;
 
 namespace Rebus.AzureStorage.Tests.Transport
 {
-    [TestFixture, Category(TestCategory.Azure)]
+    [TestFixture]
     public class NativeDeferTest : FixtureBase
     {
         static readonly string QueueName = TestConfig.GetName("input");

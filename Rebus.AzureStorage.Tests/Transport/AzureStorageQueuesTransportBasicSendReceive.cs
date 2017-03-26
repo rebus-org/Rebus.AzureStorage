@@ -10,7 +10,7 @@ using Rebus.Time;
 
 namespace Rebus.AzureStorage.Tests.Transport
 {
-    [TestFixture, Category(TestCategory.Azure)]
+    [TestFixture]
     public class AzureStorageQueuesTransportBasicSendReceive : BasicSendReceive<AzureStorageQueuesTransportFactory>
     {
         [Test]

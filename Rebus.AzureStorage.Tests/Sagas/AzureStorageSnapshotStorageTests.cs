@@ -3,7 +3,7 @@ using Rebus.Tests.Contracts.Sagas;
 
 namespace Rebus.AzureStorage.Tests.Sagas
 {
-    [TestFixture, Category(TestCategory.Azure)]
+    [TestFixture]
     public class AzureStorageSnapshotStorageTests : SagaSnapshotStorageTest<AzureStorageSagaSnapshotStorageFactory>
     {
     }
