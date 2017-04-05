@@ -20,7 +20,8 @@
 
 * Fix configuration API that accidentally threw an `ArgumentNullException` when it shouldn't have
 
-## 4.0.0-b01
+## 4.0.0-b02
 
 * Update to Rebus 4
 * Add .NET Core support
+* Update deps to b06
