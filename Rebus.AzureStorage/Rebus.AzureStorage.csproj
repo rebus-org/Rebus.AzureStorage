@@ -50,7 +50,7 @@
     <Reference Include="System.Configuration" Version="4.3.0" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="rebus" Version="4.0.0-b06" />
+    <PackageReference Include="rebus" Version="4.0.0-b09" />
     <PackageReference Include="windowsazure.storage" Version="8.1.1" />
   </ItemGroup>
   <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
