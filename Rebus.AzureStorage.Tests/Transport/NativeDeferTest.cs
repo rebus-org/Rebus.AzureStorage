@@ -6,6 +6,7 @@ using Rebus.Activation;
 using Rebus.Bus;
 using Rebus.Config;
 using Rebus.Messages;
+using Rebus.Routing.TypeBased;
 using Rebus.Tests.Contracts;
 using Rebus.Tests.Contracts.Extensions;
 #pragma warning disable 1998
@@ -27,6 +28,7 @@ namespace Rebus.AzureStorage.Tests.Transport
 
             _bus = Configure.With(_activator)
                 .Transport(t => t.UseAzureStorageQueues(AzureConfig.ConnectionString, QueueName))
+                .Routing(r => r.TypeBased().Map<TimedMessage>(QueueName))
                 .Options(o =>
                 {
                     o.LogPipeline();
