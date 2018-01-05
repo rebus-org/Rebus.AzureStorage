@@ -24,3 +24,11 @@
 
 * Update to Rebus 4
 * Add .NET Core support
+
+## 4.0.1
+
+* Validate that queue names passed to the configuration can be used because the error returned from Azure is not that great - thanks [mattwhetton]
+
+---
+
+[mattwhetton]: https://github.com/mattwhetton
