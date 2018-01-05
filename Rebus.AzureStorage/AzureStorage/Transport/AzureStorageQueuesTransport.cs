@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.WindowsAzure.Storage;
@@ -30,6 +31,7 @@ namespace Rebus.AzureStorage.Transport
         readonly CloudQueueClient _queueClient;
         readonly string _inputQueueName;
         readonly ILog _log;
+        private readonly string _queueNameValidationRegex = "^[a-z0-9](?!.*--)[a-z0-9-]{1,61}[a-z0-9]$";
 
         /// <summary>
         /// Constructs the transport
@@ -44,6 +46,8 @@ namespace Rebus.AzureStorage.Transport
 
             if (inputQueueName != null)
             {
+                if (!Regex.IsMatch(inputQueueName, _queueNameValidationRegex))
+                    throw new ArgumentException("The inputQueueName must comprise only alphanumeric characters and hyphens, and must not have 2 consecutive hyphens.", nameof(inputQueueName));
                 _inputQueueName = inputQueueName.ToLowerInvariant();
             }
         }
