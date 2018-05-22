@@ -6,8 +6,7 @@ Provides Azure Storage-based implementations for [Rebus](https://github.com/rebu
 
 * data bus storage (in blobs)
 * transport (with queues)
-* sagas (blobs + tables)
-* saga snapshots (blobs)
+* saga auditing snapshots (blobs)
 * subscriptions (tables)
 
 
