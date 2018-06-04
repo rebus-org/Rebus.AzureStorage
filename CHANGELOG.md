@@ -33,6 +33,11 @@
 
 * Add .NET Standard 2.0 as a target
 
+## 4.2.0
+
+* Add ability to configure whether to use the native message deferral mechanism, making it possibe to register a custom timeout manager (e.g. in SQL Server)
+
+
 ---
 
 [mattwhetton]: https://github.com/mattwhetton

@@ -8,6 +8,7 @@ using Rebus.Pipeline;
 using Rebus.Pipeline.Receive;
 using Rebus.Timeouts;
 using Rebus.Transport;
+// ReSharper disable ArgumentsStyleNamedExpression
 
 namespace Rebus.Config
 {
@@ -16,16 +17,28 @@ namespace Rebus.Config
     /// </summary>
     public static class AzureStorageQueuesConfigurationExtensions
     {
-        const string AsqTimeoutManagerText = "A disabled timeout manager was installed as part of the Azure Storage Queues configuration, becuase the transport has native support for deferred messages";
+        const string AsqTimeoutManagerText = @"A disabled timeout manager was installed as part of the Azure Storage Queues configuration, becuase the transport has native support for deferred messages.
+
+If you don't want to use Azure Storage Queues' native support for deferred messages, please pass AzureStorageQueuesTransportOptions with UseNativeDeferredMessages = false when
+configuring the transport, e.g. like so:
+
+Configure.With(...)
+    .Transport(t => {
+        var options = new AzureStorageQueuesTransportOptions { UseNativeDeferredMessages = false };
+
+        t.UseAzureStorageQueues(storageAccount, ""my-queue"", options: options);
+    })
+    .(...)
+    .Start();";
 
         /// <summary>
         /// Configures Rebus to use Azure Storage Queues to transport messages as a one-way client (i.e. will not be able to receive any messages)
         /// </summary>
-        public static void UseAzureStorageQueuesAsOneWayClient(this StandardConfigurer<ITransport> configurer, string storageAccountConnectionStringOrName)
+        public static void UseAzureStorageQueuesAsOneWayClient(this StandardConfigurer<ITransport> configurer, string storageAccountConnectionStringOrName, AzureStorageQueuesTransportOptions options = null)
         {
             var storageAccount = AzureConfigurationHelper.GetStorageAccount(storageAccountConnectionStringOrName);
 
-            Register(configurer, null, storageAccount);
+            Register(configurer, null, storageAccount, options);
 
             OneWayClientBackdoor.ConfigureOneWayClient(configurer);
         }
@@ -33,21 +46,21 @@ namespace Rebus.Config
         /// <summary>
         /// Configures Rebus to use Azure Storage Queues to transport messages
         /// </summary>
-        public static void UseAzureStorageQueues(this StandardConfigurer<ITransport> configurer, string storageAccountConnectionStringOrName, string inputQueueAddress)
+        public static void UseAzureStorageQueues(this StandardConfigurer<ITransport> configurer, string storageAccountConnectionStringOrName, string inputQueueAddress, AzureStorageQueuesTransportOptions options = null)
         {
             var storageAccount = AzureConfigurationHelper.GetStorageAccount(storageAccountConnectionStringOrName);
 
-            Register(configurer, inputQueueAddress, storageAccount);
+            Register(configurer, inputQueueAddress, storageAccount, options);
         }
 
         /// <summary>
         /// Configures Rebus to use Azure Storage Queues to transport messages as a one-way client (i.e. will not be able to receive any messages)
         /// </summary>
-        public static void UseAzureStorageQueuesAsOneWayClient(this StandardConfigurer<ITransport> configurer, string accountName, string keyValue, bool useHttps)
+        public static void UseAzureStorageQueuesAsOneWayClient(this StandardConfigurer<ITransport> configurer, string accountName, string keyValue, bool useHttps, AzureStorageQueuesTransportOptions options = null)
         {
             var storageAccount = new CloudStorageAccount(new StorageCredentials(accountName, keyValue), useHttps);
 
-            Register(configurer, null, storageAccount);
+            Register(configurer, null, storageAccount, options);
 
             OneWayClientBackdoor.ConfigureOneWayClient(configurer);
         }
@@ -55,19 +68,19 @@ namespace Rebus.Config
         /// <summary>
         /// Configures Rebus to use Azure Storage Queues to transport messages
         /// </summary>
-        public static void UseAzureStorageQueues(this StandardConfigurer<ITransport> configurer, string accountName, string keyValue, bool useHttps, string inputQueueAddress)
+        public static void UseAzureStorageQueues(this StandardConfigurer<ITransport> configurer, string accountName, string keyValue, bool useHttps, string inputQueueAddress, AzureStorageQueuesTransportOptions options = null)
         {
             var storageAccount = new CloudStorageAccount(new StorageCredentials(accountName, keyValue), useHttps);
 
-            Register(configurer, inputQueueAddress, storageAccount);
+            Register(configurer, inputQueueAddress, storageAccount, options);
         }
 
         /// <summary>
         /// Configures Rebus to use Azure Storage Queues to transport messages as a one-way client (i.e. will not be able to receive any messages)
         /// </summary>
-        public static void UseAzureStorageQueuesAsOneWayClient(this StandardConfigurer<ITransport> configurer, CloudStorageAccount storageAccount)
+        public static void UseAzureStorageQueuesAsOneWayClient(this StandardConfigurer<ITransport> configurer, CloudStorageAccount storageAccount, AzureStorageQueuesTransportOptions options = null)
         {
-            Register(configurer, null, storageAccount);
+            Register(configurer, null, storageAccount, options);
 
             OneWayClientBackdoor.ConfigureOneWayClient(configurer);
         }
@@ -75,31 +88,36 @@ namespace Rebus.Config
         /// <summary>
         /// Configures Rebus to use Azure Storage Queues to transport messages
         /// </summary>
-        public static void UseAzureStorageQueues(this StandardConfigurer<ITransport> configurer, CloudStorageAccount storageAccount, string inputQueueAddress)
+        public static void UseAzureStorageQueues(this StandardConfigurer<ITransport> configurer, CloudStorageAccount storageAccount, string inputQueueAddress, AzureStorageQueuesTransportOptions options = null)
         {
-            Register(configurer, inputQueueAddress, storageAccount);
+            Register(configurer, inputQueueAddress, storageAccount, options);
         }
 
-        static void Register(StandardConfigurer<ITransport> configurer, string inputQueueAddress, CloudStorageAccount storageAccount)
+        static void Register(StandardConfigurer<ITransport> configurer, string inputQueueAddress, CloudStorageAccount storageAccount, AzureStorageQueuesTransportOptions optionsOrNull)
         {
             if (configurer == null) throw new ArgumentNullException(nameof(configurer));
             if (storageAccount == null) throw new ArgumentNullException(nameof(storageAccount));
 
+            var options = optionsOrNull ?? new AzureStorageQueuesTransportOptions();
+
             configurer.Register(c =>
             {
                 var rebusLoggerFactory = c.Get<IRebusLoggerFactory>();
-                return new AzureStorageQueuesTransport(storageAccount, inputQueueAddress, rebusLoggerFactory);
+                return new AzureStorageQueuesTransport(storageAccount, inputQueueAddress, rebusLoggerFactory, options);
             });
 
-            configurer.OtherService<ITimeoutManager>().Register(c => new DisabledTimeoutManager(), description: AsqTimeoutManagerText);
-
-            configurer.OtherService<IPipeline>().Decorate(c =>
+            if (options.UseNativeDeferredMessages)
             {
-                var pipeline = c.Get<IPipeline>();
-                
-                return new PipelineStepRemover(pipeline)
-                    .RemoveIncomingStep(s => s.GetType() == typeof(HandleDeferredMessagesStep));
-            });
+                configurer.OtherService<ITimeoutManager>().Register(c => new DisabledTimeoutManager(), description: AsqTimeoutManagerText);
+
+                configurer.OtherService<IPipeline>().Decorate(c =>
+                {
+                    var pipeline = c.Get<IPipeline>();
+
+                    return new PipelineStepRemover(pipeline)
+                        .RemoveIncomingStep(s => s.GetType() == typeof(HandleDeferredMessagesStep));
+                });
+            }
         }
     }
 }

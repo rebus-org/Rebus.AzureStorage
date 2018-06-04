@@ -10,12 +10,14 @@ using Microsoft.WindowsAzure.Storage.Queue;
 using Microsoft.WindowsAzure.Storage.RetryPolicies;
 using Newtonsoft.Json;
 using Rebus.Bus;
+using Rebus.Config;
 using Rebus.Exceptions;
 using Rebus.Extensions;
 using Rebus.Logging;
 using Rebus.Messages;
 using Rebus.Time;
 using Rebus.Transport;
+// ReSharper disable MethodSupportsCancellation
 
 #pragma warning disable 1998
 
@@ -26,29 +28,34 @@ namespace Rebus.AzureStorage.Transport
     /// </summary>
     public class AzureStorageQueuesTransport : ITransport, IInitializable
     {
+        const string QueueNameValidationRegex = "^[a-z0-9](?!.*--)[a-z0-9-]{1,61}[a-z0-9]$";
+        readonly AzureStorageQueuesTransportOptions _options;
         readonly ConcurrentDictionary<string, CloudQueue> _queues = new ConcurrentDictionary<string, CloudQueue>();
         readonly TimeSpan _initialVisibilityDelay = TimeSpan.FromMinutes(5);
         readonly CloudQueueClient _queueClient;
-        readonly string _inputQueueName;
         readonly ILog _log;
-        private readonly string _queueNameValidationRegex = "^[a-z0-9](?!.*--)[a-z0-9-]{1,61}[a-z0-9]$";
+        static readonly QueueRequestOptions DefaultQueueRequestOptions = new QueueRequestOptions();
+        static readonly OperationContext DefaultOperationContext = new OperationContext();
 
         /// <summary>
         /// Constructs the transport
         /// </summary>
-        public AzureStorageQueuesTransport(CloudStorageAccount storageAccount, string inputQueueName, IRebusLoggerFactory rebusLoggerFactory)
+        public AzureStorageQueuesTransport(CloudStorageAccount storageAccount, string inputQueueName, IRebusLoggerFactory rebusLoggerFactory, AzureStorageQueuesTransportOptions options)
         {
             if (storageAccount == null) throw new ArgumentNullException(nameof(storageAccount));
             if (rebusLoggerFactory == null) throw new ArgumentNullException(nameof(rebusLoggerFactory));
 
+            _options = options;
             _queueClient = storageAccount.CreateCloudQueueClient();
             _log = rebusLoggerFactory.GetLogger<AzureStorageQueuesTransport>();
 
             if (inputQueueName != null)
             {
-                if (!Regex.IsMatch(inputQueueName, _queueNameValidationRegex))
-                    throw new ArgumentException("The inputQueueName must comprise only alphanumeric characters and hyphens, and must not have 2 consecutive hyphens.", nameof(inputQueueName));
-                _inputQueueName = inputQueueName.ToLowerInvariant();
+                if (!Regex.IsMatch(inputQueueName, QueueNameValidationRegex))
+                {
+                    throw new ArgumentException($"The inputQueueName {inputQueueName} is not valid - it can contain only alphanumeric characters and hyphens, and must not have 2 consecutive hyphens.", nameof(inputQueueName));
+                }
+                Address = inputQueueName.ToLowerInvariant();
             }
         }
 
@@ -80,7 +87,7 @@ namespace Rebus.AzureStorage.Transport
                 try
                 {
                     var options = new QueueRequestOptions { RetryPolicy = new ExponentialRetry() };
-                    var operationContext = new OperationContext();
+                    var operationContext = DefaultOperationContext;
 
                     await queue.AddMessageAsync(cloudQueueMessage, timeToBeReceivedOrNull, queueVisibilityDelayOrNull, options, operationContext);
                 }
@@ -96,21 +103,25 @@ namespace Rebus.AzureStorage.Transport
         /// </summary>
         public async Task<TransportMessage> Receive(ITransactionContext context, CancellationToken cancellationToken)
         {
-            if (_inputQueueName == null)
+            if (Address == null)
             {
                 throw new InvalidOperationException("This Azure Storage Queues transport does not have an input queue, hence it is not possible to receive anything");
             }
-            var inputQueue = GetQueue(_inputQueueName);
+            
+            var inputQueue = GetQueue(Address);
 
-            var cloudQueueMessage = await inputQueue.GetMessageAsync(_initialVisibilityDelay, new QueueRequestOptions(), new OperationContext(), cancellationToken);
+            var cloudQueueMessage = await inputQueue.GetMessageAsync(_initialVisibilityDelay, DefaultQueueRequestOptions, DefaultOperationContext, cancellationToken);
 
             if (cloudQueueMessage == null) return null;
+
+            var messageId = cloudQueueMessage.Id;
+            var popReceipt = cloudQueueMessage.PopReceipt;
 
             context.OnCompleted(async () =>
             {
                 // if we get this far, don't pass on the cancellation token
                 // ReSharper disable once MethodSupportsCancellation
-                await inputQueue.DeleteMessageAsync(cloudQueueMessage);
+                await inputQueue.DeleteMessageAsync(messageId, popReceipt);
             });
 
             context.OnAborted(() =>
@@ -126,22 +137,24 @@ namespace Rebus.AzureStorage.Transport
 
         static TimeSpan? GetTimeToBeReceivedOrNull(Dictionary<string, string> headers)
         {
-            string timeToBeReceivedStr;
-
-            if (!headers.TryGetValue(Headers.TimeToBeReceived, out timeToBeReceivedStr))
+            if (!headers.TryGetValue(Headers.TimeToBeReceived, out var timeToBeReceivedStr))
             {
                 return null;
             }
 
             TimeSpan? timeToBeReceived = TimeSpan.Parse(timeToBeReceivedStr);
+
             return timeToBeReceived;
         }
 
-        internal static TimeSpan? GetQueueVisibilityDelayOrNull(Dictionary<string, string> headers)
+        TimeSpan? GetQueueVisibilityDelayOrNull(Dictionary<string, string> headers)
         {
-            string deferredUntilDateTimeOffsetString;
+            if (!_options.UseNativeDeferredMessages)
+            {
+                return null;
+            }
 
-            if (!headers.TryGetValue(Headers.DeferredUntil, out deferredUntilDateTimeOffsetString))
+            if (!headers.TryGetValue(Headers.DeferredUntil, out var deferredUntilDateTimeOffsetString))
             {
                 return null;
             }
@@ -182,27 +195,24 @@ namespace Rebus.AzureStorage.Transport
         }
 
         /// <inheritdoc />
-        public string Address => _inputQueueName;
+        public string Address { get; }
 
         /// <summary>
         /// Initializes the transport by creating the input queue if necessary
         /// </summary>
         public void Initialize()
         {
-            if (_inputQueueName != null)
+            if (Address != null)
             {
-                _log.Info("Initializing Azure Storage Queues transport with queue '{0}'", _inputQueueName);
-                CreateQueue(_inputQueueName);
+                _log.Info("Initializing Azure Storage Queues transport with queue '{0}'", Address);
+                CreateQueue(Address);
                 return;
             }
 
             _log.Info("Initializing one-way Azure Storage Queues transport");
         }
 
-        CloudQueue GetQueue(string address)
-        {
-            return _queues.GetOrAdd(address, _ => _queueClient.GetQueueReference(address));
-        }
+        CloudQueue GetQueue(string address) => _queues.GetOrAdd(address, _ => _queueClient.GetQueueReference(address));
 
         /// <summary>
         /// Purges the input queue (WARNING: potentially very slow operation, as it will continue to batch receive messages until the queue is empty
@@ -210,11 +220,11 @@ namespace Rebus.AzureStorage.Transport
         /// <exception cref="RebusApplicationException"></exception>
         public void PurgeInputQueue()
         {
-            var queue = GetQueue(_inputQueueName);
+            var queue = GetQueue(Address);
 
             if (!AsyncHelpers.GetResult(() => queue.ExistsAsync())) return;
 
-            _log.Info("Purging storage queue '{0}' (purging by deleting all messages)", _inputQueueName);
+            _log.Info("Purging storage queue '{0}' (purging by deleting all messages)", Address);
 
             try
             {
@@ -226,7 +236,7 @@ namespace Rebus.AzureStorage.Transport
 
                     Task.WaitAll(messages.Select(message => queue.DeleteMessageAsync(message)).ToArray());
 
-                    _log.Debug("Deleted {0} messages from '{1}'", messages.Count, _inputQueueName);
+                    _log.Debug("Deleted {0} messages from '{1}'", messages.Count, Address);
                 }
             }
             catch (Exception exception)
