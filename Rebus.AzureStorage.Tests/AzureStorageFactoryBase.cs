@@ -60,8 +60,8 @@ namespace Rebus.AzureStorage.Tests
         protected static void DropTable(string tableName)
         {
             var client = StorageAccount.CreateCloudTableClient();
-
             var table = client.GetTableReference(tableName);
+            
             AsyncHelpers.RunSync(() => table.DeleteIfExistsAsync());
         }
 
@@ -72,9 +72,12 @@ namespace Rebus.AzureStorage.Tests
             AsyncHelpers.RunSync(() => container.DeleteIfExistsAsync());
         }
 
-        public static void PurgeQueue(string queueName)
-        {
-            new AzureStorageQueuesTransport(StorageAccount,queueName,new NullLoggerFactory(),new AzureStorageQueuesTransportOptions()).PurgeInputQueue();
-        }
+        public static void PurgeQueue(string queueName) => new AzureStorageQueuesTransport(
+                StorageAccount,
+                queueName,
+                new NullLoggerFactory(),
+                new AzureStorageQueuesTransportOptions()
+            )
+            .PurgeInputQueue();
     }
 }

@@ -30,6 +30,7 @@ namespace Rebus.AzureStorage.Transport
     public class AzureStorageQueuesTransport : ITransport, IInitializable
     {
         const string QueueNameValidationRegex = "^[a-z0-9](?!.*--)[a-z0-9-]{1,61}[a-z0-9]$";
+        static readonly QueueRequestOptions ExponentialRetryRequestOptions = new QueueRequestOptions { RetryPolicy = new ExponentialRetry() };
         static readonly QueueRequestOptions DefaultQueueRequestOptions = new QueueRequestOptions();
         static readonly OperationContext DefaultOperationContext = new OperationContext();
         readonly AzureStorageQueuesTransportOptions _options;
@@ -38,7 +39,6 @@ namespace Rebus.AzureStorage.Transport
         readonly TimeSpan _initialVisibilityDelay = TimeSpan.FromMinutes(5);
         readonly CloudQueueClient _queueClient;
         readonly ILog _log;
-        static readonly QueueRequestOptions ExponentialRetryRequestOptions = new QueueRequestOptions { RetryPolicy = new ExponentialRetry() };
 
         /// <summary>
         /// Constructs the transport
@@ -329,25 +329,6 @@ namespace Rebus.AzureStorage.Transport
             try
             {
                 AsyncHelpers.RunSync(() => queue.ClearAsync(ExponentialRetryRequestOptions, DefaultOperationContext));
-            }
-            catch (Exception exception)
-            {
-                throw new RebusApplicationException(exception, "Could not purge queue");
-            }
-
-            return;
-            try
-            {
-                while (true)
-                {
-                    var messages = AsyncHelpers.GetResult(() => queue.GetMessagesAsync(10)).ToList();
-
-                    if (!messages.Any()) break;
-
-                    Task.WaitAll(messages.Select(message => queue.DeleteMessageAsync(message)).ToArray());
-
-                    _log.Debug("Deleted {0} messages from '{1}'", messages.Count, Address);
-                }
             }
             catch (Exception exception)
             {
