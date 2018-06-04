@@ -38,8 +38,8 @@
   <ItemGroup>
     <ProjectReference Include="..\Rebus.AzureStorage\Rebus.AzureStorage.csproj" />
     <PackageReference Include="nunit" Version="3.7.1" />
-    <PackageReference Include="rebus" Version="4.0.0" />
-    <PackageReference Include="rebus.tests.contracts" Version="4.0.0" />
+    <PackageReference Include="rebus" Version="4.2.1" />
+    <PackageReference Include="rebus.tests.contracts" Version="4.2.1" />
   </ItemGroup>
   <ItemGroup>
     <None Update="azure_storage_connection_string.txt">

@@ -35,8 +35,8 @@
 
 ## 4.2.0
 
-* Add ability to configure whether to use the native message deferral mechanism, making it possibe to register a custom timeout manager (e.g. in SQL Server)
-
+* Ability to configure whether to use the native message deferral mechanism, making it possibe to register a custom timeout manager (e.g. in SQL Server)
+* Prefetch option - can be configured to prefetch a number of messages (up to 32, because that's what Azure Storage Queues can do), which may improve performance in some scenarios
 
 ---
 

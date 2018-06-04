@@ -1,7 +1,10 @@
 ﻿using System;
 using System.IO;
 using Microsoft.WindowsAzure.Storage;
+using Rebus.AzureStorage.Transport;
+using Rebus.Config;
 using Rebus.Exceptions;
+using Rebus.Logging;
 
 namespace Rebus.AzureStorage.Tests
 {
@@ -67,6 +70,11 @@ namespace Rebus.AzureStorage.Tests
             var client = StorageAccount.CreateCloudBlobClient();
             var container = client.GetContainerReference(containerName);
             AsyncHelpers.RunSync(() => container.DeleteIfExistsAsync());
+        }
+
+        public static void PurgeQueue(string queueName)
+        {
+            new AzureStorageQueuesTransport(StorageAccount,queueName,new NullLoggerFactory(),new AzureStorageQueuesTransportOptions()).PurgeInputQueue();
         }
     }
 }

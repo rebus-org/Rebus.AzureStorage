@@ -18,6 +18,7 @@ using Rebus.Messages;
 using Rebus.Time;
 using Rebus.Transport;
 // ReSharper disable MethodSupportsCancellation
+// ReSharper disable EmptyGeneralCatchClause
 
 #pragma warning disable 1998
 
@@ -29,13 +30,15 @@ namespace Rebus.AzureStorage.Transport
     public class AzureStorageQueuesTransport : ITransport, IInitializable
     {
         const string QueueNameValidationRegex = "^[a-z0-9](?!.*--)[a-z0-9-]{1,61}[a-z0-9]$";
+        static readonly QueueRequestOptions DefaultQueueRequestOptions = new QueueRequestOptions();
+        static readonly OperationContext DefaultOperationContext = new OperationContext();
         readonly AzureStorageQueuesTransportOptions _options;
         readonly ConcurrentDictionary<string, CloudQueue> _queues = new ConcurrentDictionary<string, CloudQueue>();
+        readonly ConcurrentQueue<CloudQueueMessage> _prefetchedMessages = new ConcurrentQueue<CloudQueueMessage>();
         readonly TimeSpan _initialVisibilityDelay = TimeSpan.FromMinutes(5);
         readonly CloudQueueClient _queueClient;
         readonly ILog _log;
-        static readonly QueueRequestOptions DefaultQueueRequestOptions = new QueueRequestOptions();
-        static readonly OperationContext DefaultOperationContext = new OperationContext();
+        static readonly QueueRequestOptions ExponentialRetryRequestOptions = new QueueRequestOptions { RetryPolicy = new ExponentialRetry() };
 
         /// <summary>
         /// Constructs the transport
@@ -72,30 +75,70 @@ namespace Rebus.AzureStorage.Transport
         /// <summary>
         /// Sends the given <see cref="TransportMessage"/> to the queue with the specified globally addressable name
         /// </summary>
-        public async Task Send(string destinationAddress, TransportMessage message, ITransactionContext context)
+        public async Task Send(string destinationAddress, TransportMessage transportMessage, ITransactionContext context)
         {
-            context.OnCommitted(async () =>
+            var outgoingMessages = context.GetOrAdd("outgoing-messages", () =>
             {
-                var headers = message.Headers.Clone();
-                var queue = GetQueue(destinationAddress);
-                var messageId = Guid.NewGuid().ToString();
-                var popReceipt = Guid.NewGuid().ToString();
-                var timeToBeReceivedOrNull = GetTimeToBeReceivedOrNull(headers);
-                var queueVisibilityDelayOrNull = GetQueueVisibilityDelayOrNull(headers);
-                var cloudQueueMessage = Serialize(messageId, popReceipt, headers, message.Body);
+                var messagesToSend = new ConcurrentQueue<MessageToSend>();
 
-                try
+                context.OnCommitted(() =>
                 {
-                    var options = new QueueRequestOptions { RetryPolicy = new ExponentialRetry() };
-                    var operationContext = DefaultOperationContext;
+                    var messagesByQueue = messagesToSend
+                        .GroupBy(m => m.DestinationAddress)
+                        .ToList();
 
-                    await queue.AddMessageAsync(cloudQueueMessage, timeToBeReceivedOrNull, queueVisibilityDelayOrNull, options, operationContext);
-                }
-                catch (Exception exception)
-                {
-                    throw new RebusApplicationException(exception, $"Could not send message with ID {cloudQueueMessage.Id} to '{destinationAddress}'");
-                }
+                    return Task.WhenAll(messagesByQueue.Select(async batch =>
+                    {
+                        var queueName = batch.Key;
+                        var queue = GetQueue(queueName);
+
+                        await Task.WhenAll(batch.Select(async message =>
+                        {
+                            var headers = message.Headers.Clone();
+                            var timeToBeReceivedOrNull = GetTimeToBeReceivedOrNull(headers);
+                            var queueVisibilityDelayOrNull = GetQueueVisibilityDelayOrNull(headers);
+                            var cloudQueueMessage = Serialize(headers, message.Body);
+
+                            try
+                            {
+                                await queue.AddMessageAsync(
+                                    cloudQueueMessage,
+                                    timeToBeReceivedOrNull,
+                                    queueVisibilityDelayOrNull,
+                                    ExponentialRetryRequestOptions,
+                                    DefaultOperationContext
+                                );
+                            }
+                            catch (Exception exception)
+                            {
+                                var errorText = $"Could not send message with ID {cloudQueueMessage.Id} to '{message.DestinationAddress}'";
+
+                                throw new RebusApplicationException(exception, errorText);
+                            }
+                        }));
+                    }));
+                });
+
+                return messagesToSend;
             });
+
+            var messageToSend = new MessageToSend(destinationAddress, transportMessage.Headers, transportMessage.Body);
+
+            outgoingMessages.Enqueue(messageToSend);
+        }
+
+        class MessageToSend
+        {
+            public string DestinationAddress { get; }
+            public Dictionary<string, string> Headers { get; }
+            public byte[] Body { get; }
+
+            public MessageToSend(string destinationAddress, Dictionary<string, string> headers, byte[] body)
+            {
+                DestinationAddress = destinationAddress;
+                Headers = headers;
+                Body = body;
+            }
         }
 
         /// <summary>
@@ -107,21 +150,74 @@ namespace Rebus.AzureStorage.Transport
             {
                 throw new InvalidOperationException("This Azure Storage Queues transport does not have an input queue, hence it is not possible to receive anything");
             }
-            
+
             var inputQueue = GetQueue(Address);
 
-            var cloudQueueMessage = await inputQueue.GetMessageAsync(_initialVisibilityDelay, DefaultQueueRequestOptions, DefaultOperationContext, cancellationToken);
+            if (_prefetchedMessages.TryDequeue(out var dequeuedMessage))
+            {
+                SetUpCompletion(context, dequeuedMessage, inputQueue);
+                return Deserialize(dequeuedMessage);
+            }
+
+            if (_options.Prefetch.HasValue)
+            {
+                var cloudQueueMessages = await inputQueue.GetMessagesAsync(
+                    _options.Prefetch.Value,
+                    _initialVisibilityDelay,
+                    DefaultQueueRequestOptions,
+                    DefaultOperationContext,
+                    cancellationToken
+                );
+
+                foreach (var message in cloudQueueMessages)
+                {
+                    _prefetchedMessages.Enqueue(message);
+                }
+
+                if (_prefetchedMessages.TryDequeue(out var newlyPrefetchedMessage))
+                {
+                    SetUpCompletion(context, newlyPrefetchedMessage, inputQueue);
+                    return Deserialize(newlyPrefetchedMessage);
+                }
+
+                return null;
+            }
+
+            var cloudQueueMessage = await inputQueue.GetMessageAsync(
+                _initialVisibilityDelay,
+                DefaultQueueRequestOptions,
+                DefaultOperationContext,
+                cancellationToken
+            );
 
             if (cloudQueueMessage == null) return null;
 
+            SetUpCompletion(context, cloudQueueMessage, inputQueue);
+            return Deserialize(cloudQueueMessage);
+        }
+
+        static void SetUpCompletion(ITransactionContext context, CloudQueueMessage cloudQueueMessage, CloudQueue inputQueue)
+        {
             var messageId = cloudQueueMessage.Id;
             var popReceipt = cloudQueueMessage.PopReceipt;
 
             context.OnCompleted(async () =>
             {
-                // if we get this far, don't pass on the cancellation token
-                // ReSharper disable once MethodSupportsCancellation
-                await inputQueue.DeleteMessageAsync(messageId, popReceipt);
+                try
+                {
+                    // if we get this far, don't pass on the cancellation token
+                    // ReSharper disable once MethodSupportsCancellation
+                    await inputQueue.DeleteMessageAsync(
+                        messageId,
+                        popReceipt,
+                        ExponentialRetryRequestOptions,
+                        DefaultOperationContext
+                    );
+                }
+                catch (Exception exception)
+                {
+                    throw new RebusApplicationException(exception, $"Could not delete message with ID {messageId} and pop receipt {popReceipt} from the input queue");
+                }
             });
 
             context.OnAborted(() =>
@@ -129,10 +225,16 @@ namespace Rebus.AzureStorage.Transport
                 const MessageUpdateFields fields = MessageUpdateFields.Visibility;
                 var visibilityTimeout = TimeSpan.FromSeconds(0);
 
-                AsyncHelpers.RunSync(() => inputQueue.UpdateMessageAsync(cloudQueueMessage, visibilityTimeout, fields));
+                AsyncHelpers.RunSync(async () =>
+                {
+                    // ignore if this fails
+                    try
+                    {
+                        await inputQueue.UpdateMessageAsync(cloudQueueMessage, visibilityTimeout, fields);
+                    }
+                    catch { }
+                });
             });
-
-            return Deserialize(cloudQueueMessage);
         }
 
         static TimeSpan? GetTimeToBeReceivedOrNull(Dictionary<string, string> headers)
@@ -168,7 +270,7 @@ namespace Rebus.AzureStorage.Transport
             return difference;
         }
 
-        static CloudQueueMessage Serialize(string messageId, string popReceipt, Dictionary<string, string> headers, byte[] body)
+        static CloudQueueMessage Serialize(Dictionary<string, string> headers, byte[] body)
         {
             var cloudStorageQueueTransportMessage = new CloudStorageQueueTransportMessage
             {
@@ -176,9 +278,7 @@ namespace Rebus.AzureStorage.Transport
                 Body = body
             };
 
-            var cloudQueueMessage = new CloudQueueMessage(messageId, popReceipt);
-            cloudQueueMessage.SetMessageContent(JsonConvert.SerializeObject(cloudStorageQueueTransportMessage));
-            return cloudQueueMessage;
+            return new CloudQueueMessage(JsonConvert.SerializeObject(cloudStorageQueueTransportMessage));
         }
 
         static TransportMessage Deserialize(CloudQueueMessage cloudQueueMessage)
@@ -226,6 +326,16 @@ namespace Rebus.AzureStorage.Transport
 
             _log.Info("Purging storage queue '{0}' (purging by deleting all messages)", Address);
 
+            try
+            {
+                AsyncHelpers.RunSync(() => queue.ClearAsync(ExponentialRetryRequestOptions, DefaultOperationContext));
+            }
+            catch (Exception exception)
+            {
+                throw new RebusApplicationException(exception, "Could not purge queue");
+            }
+
+            return;
             try
             {
                 while (true)

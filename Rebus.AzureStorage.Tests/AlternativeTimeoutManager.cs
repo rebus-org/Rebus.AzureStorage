@@ -4,9 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.WindowsAzure.Storage;
 using NUnit.Framework;
 using Rebus.Activation;
-using Rebus.AzureStorage.Transport;
 using Rebus.Config;
-using Rebus.Logging;
 using Rebus.Persistence.InMem;
 using Rebus.Tests.Contracts;
 using Rebus.Tests.Contracts.Extensions;
@@ -28,8 +26,8 @@ namespace Rebus.AzureStorage.Tests
         {
             _storageAccount = CloudStorageAccount.Parse(AzureStorageFactoryBase.ConnectionString);
 
-            new AzureStorageQueuesTransport(_storageAccount, QueueName, new NullLoggerFactory(), new AzureStorageQueuesTransportOptions()).PurgeInputQueue();
-            new AzureStorageQueuesTransport(_storageAccount, TimeoutManagerQueueName, new NullLoggerFactory(), new AzureStorageQueuesTransportOptions()).PurgeInputQueue();
+            AzureStorageFactoryBase.PurgeQueue(QueueName);
+            AzureStorageFactoryBase.PurgeQueue(TimeoutManagerQueueName);
 
             _activator = new BuiltinHandlerActivator();
 

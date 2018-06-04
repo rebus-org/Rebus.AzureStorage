@@ -14,5 +14,10 @@ namespace Rebus.Config
         /// <see cref="IBus.Defer"/> or <see cref="IBus.DeferLocal"/> messages.
         /// </summary>
         public bool UseNativeDeferredMessages { get; set; } = true;
+
+        /// <summary>
+        /// Configures how many messages to prefetch. Valid values are null, 0, ... 32
+        /// </summary>
+        public int? Prefetch { get; set; } = null;
     }
 }
