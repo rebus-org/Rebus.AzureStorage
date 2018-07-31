@@ -32,7 +32,6 @@ namespace Rebus.AzureStorage.Transport
         const string QueueNameValidationRegex = "^[a-z0-9](?!.*--)[a-z0-9-]{1,61}[a-z0-9]$";
         static readonly QueueRequestOptions ExponentialRetryRequestOptions = new QueueRequestOptions { RetryPolicy = new ExponentialRetry() };
         static readonly QueueRequestOptions DefaultQueueRequestOptions = new QueueRequestOptions();
-        static readonly OperationContext DefaultOperationContext = new OperationContext();
         readonly AzureStorageQueuesTransportOptions _options;
         readonly ConcurrentDictionary<string, CloudQueue> _queues = new ConcurrentDictionary<string, CloudQueue>();
         readonly ConcurrentQueue<CloudQueueMessage> _prefetchedMessages = new ConcurrentQueue<CloudQueueMessage>();
@@ -106,7 +105,7 @@ namespace Rebus.AzureStorage.Transport
                                     timeToBeReceivedOrNull,
                                     queueVisibilityDelayOrNull,
                                     ExponentialRetryRequestOptions,
-                                    DefaultOperationContext
+                                    new OperationContext()
                                 );
                             }
                             catch (Exception exception)
@@ -165,7 +164,7 @@ namespace Rebus.AzureStorage.Transport
                     _options.Prefetch.Value,
                     _initialVisibilityDelay,
                     DefaultQueueRequestOptions,
-                    DefaultOperationContext,
+                    new OperationContext(),
                     cancellationToken
                 );
 
@@ -186,7 +185,7 @@ namespace Rebus.AzureStorage.Transport
             var cloudQueueMessage = await inputQueue.GetMessageAsync(
                 _initialVisibilityDelay,
                 DefaultQueueRequestOptions,
-                DefaultOperationContext,
+                new OperationContext(),
                 cancellationToken
             );
 
@@ -211,7 +210,7 @@ namespace Rebus.AzureStorage.Transport
                         messageId,
                         popReceipt,
                         ExponentialRetryRequestOptions,
-                        DefaultOperationContext
+                        new OperationContext()
                     );
                 }
                 catch (Exception exception)
@@ -328,7 +327,7 @@ namespace Rebus.AzureStorage.Transport
 
             try
             {
-                AsyncHelpers.RunSync(() => queue.ClearAsync(ExponentialRetryRequestOptions, DefaultOperationContext));
+                AsyncHelpers.RunSync(() => queue.ClearAsync(ExponentialRetryRequestOptions, new OperationContext()));
             }
             catch (Exception exception)
             {

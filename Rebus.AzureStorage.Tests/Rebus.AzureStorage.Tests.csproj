@@ -45,6 +45,9 @@
     <PackageReference Include="rebus.tests.contracts" Version="4.2.1" />
   </ItemGroup>
   <ItemGroup>
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+  </ItemGroup>
+  <ItemGroup>
     <None Update="azure_storage_connection_string.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

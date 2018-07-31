@@ -48,13 +48,11 @@ namespace Rebus.AzureStorage.Sagas
             var metaDataBlob = _container.GetBlockBlobReference(metaDataRef);
             dataBlob.Properties.ContentType = "application/json";
             metaDataBlob.Properties.ContentType = "application/json";
-            await dataBlob.UploadTextAsync(JsonConvert.SerializeObject(sagaData, DataSettings), TextEncoding, DefaultAccessCondition, DefaultRequestOptions, DefaultOperationContext);
-            await metaDataBlob.UploadTextAsync(JsonConvert.SerializeObject(sagaAuditMetadata, MetadataSettings), TextEncoding, DefaultAccessCondition, DefaultRequestOptions, DefaultOperationContext);
+            await dataBlob.UploadTextAsync(JsonConvert.SerializeObject(sagaData, DataSettings), TextEncoding, DefaultAccessCondition, DefaultRequestOptions, new OperationContext());
+            await metaDataBlob.UploadTextAsync(JsonConvert.SerializeObject(sagaAuditMetadata, MetadataSettings), TextEncoding, DefaultAccessCondition, DefaultRequestOptions, new OperationContext());
             await dataBlob.SetPropertiesAsync();
             await metaDataBlob.SetPropertiesAsync();
         }
-
-        static OperationContext DefaultOperationContext => new OperationContext();
 
         static BlobRequestOptions DefaultRequestOptions => new BlobRequestOptions { RetryPolicy = new ExponentialRetry() };
 
@@ -69,7 +67,7 @@ namespace Rebus.AzureStorage.Sagas
 
             while (true)
             {
-                var result = AsyncHelpers.GetResult(() => _container.ListBlobsSegmentedAsync("", true, BlobListingDetails.None, 100, continuationToken, DefaultRequestOptions, DefaultOperationContext));
+                var result = AsyncHelpers.GetResult(() => _container.ListBlobsSegmentedAsync("", true, BlobListingDetails.None, 100, continuationToken, DefaultRequestOptions, new OperationContext()));
 
                 foreach (var item in result.Results)
                 {

@@ -38,6 +38,10 @@
 * Ability to configure whether to use the native message deferral mechanism, making it possibe to register a custom timeout manager (e.g. in SQL Server)
 * Prefetch option - can be configured to prefetch a number of messages (up to 32, because that's what Azure Storage Queues can do), which may improve performance in some scenarios
 
+## 4.2.1
+
+* Fix bug that would leak memory due to static `OperationContext` instances accumulating state for each call
+
 ---
 
 [mattwhetton]: https://github.com/mattwhetton
