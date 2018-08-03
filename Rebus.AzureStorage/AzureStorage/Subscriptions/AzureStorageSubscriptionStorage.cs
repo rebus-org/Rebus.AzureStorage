@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.RetryPolicies;
@@ -79,6 +80,11 @@ namespace Rebus.AzureStorage.Subscriptions
                 var operationContext = new OperationContext();
                 var tableRequestOptions = new TableRequestOptions { RetryPolicy = new ExponentialRetry() };
                 var result = await table.ExecuteAsync(TableOperation.InsertOrReplace(entity), tableRequestOptions, operationContext);
+
+                if (result.HttpStatusCode >= 200 && result.HttpStatusCode < 300) return;
+
+                throw new RebusApplicationException(
+                    $"HTTP status {result.HttpStatusCode} returned when registering '{subscriberAddress}' as a subscriber for '{topic}'");
             }
             catch (Exception exception)
             {
