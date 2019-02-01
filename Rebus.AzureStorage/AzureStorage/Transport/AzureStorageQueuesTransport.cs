@@ -35,7 +35,7 @@ namespace Rebus.AzureStorage.Transport
         readonly AzureStorageQueuesTransportOptions _options;
         readonly ConcurrentDictionary<string, CloudQueue> _queues = new ConcurrentDictionary<string, CloudQueue>();
         readonly ConcurrentQueue<CloudQueueMessage> _prefetchedMessages = new ConcurrentQueue<CloudQueueMessage>();
-        readonly TimeSpan _initialVisibilityDelay = TimeSpan.FromMinutes(5);
+        readonly TimeSpan _initialVisibilityDelay;
         readonly CloudQueueClient _queueClient;
         readonly ILog _log;
 
@@ -50,6 +50,7 @@ namespace Rebus.AzureStorage.Transport
             _options = options;
             _queueClient = storageAccount.CreateCloudQueueClient();
             _log = rebusLoggerFactory.GetLogger<AzureStorageQueuesTransport>();
+            _initialVisibilityDelay = options.InitialVisibilityDelay;
 
             if (inputQueueName != null)
             {

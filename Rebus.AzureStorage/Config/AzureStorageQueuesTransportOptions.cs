@@ -1,4 +1,5 @@
-﻿using Rebus.Bus;
+﻿using System;
+using Rebus.Bus;
 
 namespace Rebus.Config
 {
@@ -19,5 +20,15 @@ namespace Rebus.Config
         /// Configures how many messages to prefetch. Valid values are null, 0, ... 32
         /// </summary>
         public int? Prefetch { get; set; } = null;
+
+        /// <summary>
+        /// Optional. Specifies the new visibility timeout value, in seconds, relative to server time. The default value is 5 minutes.
+        /// A specified value must be larger than or equal to 1 second, and cannot be larger than 7 days, or larger than 2 hours on REST protocol versions prior to version 2011-08-18. The
+        /// visibility timeout of a message can be set to a value later than the expiry time.
+        /// </summary>
+        /// <remarks>
+        /// See https://docs.microsoft.com/en-us/rest/api/storageservices/get-messages for more
+        /// </remarks>
+        public TimeSpan InitialVisibilityDelay { get; set; } = TimeSpan.FromMinutes(5);
     }
 }
