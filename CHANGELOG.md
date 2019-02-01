@@ -42,6 +42,11 @@
 
 * Fix bug that would leak memory due to static `OperationContext` instances accumulating state for each call
 
+## 4.3.0
+
+* Make message visibility timeout configurable - thanks [micdah]
+
 ---
 
 [mattwhetton]: https://github.com/mattwhetton
+[micdah]: https://github.com/micdah
