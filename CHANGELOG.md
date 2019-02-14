@@ -48,7 +48,7 @@
 
 ## 5.0.0
 
-* Update WindowsAzure.Storage dependency to 9.3.3
+* Update WindowsAzure.Storage dependency to 9.3.3 and Rebus dependency to 5.2.1
 
 ---
 
