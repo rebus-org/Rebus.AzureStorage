@@ -49,8 +49,8 @@
 ## 5.0.1
 
 * Update to new storage libs (9.4.2) and Rebus dependency to 5.0.0. 
-* Package now targets .NET 4.5.2 and .NET Standard 2.0.
-* Remove table storage-based subscription storage, because table storage 
+* Package now targets .NET 4.6.1 and .NET Standard 2.0.
+* Remove table storage-based subscription storage, because table storage is available through the Cosmos DB client lib, which is currently not compatible with Microsoft Azure Storage Blog/Queue.
 
 
 ---
