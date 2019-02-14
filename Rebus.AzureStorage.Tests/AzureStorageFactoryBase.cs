@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using Microsoft.WindowsAzure.Storage;
+using Microsoft.WindowsAzure.Storage.Blob;
 using Rebus.AzureStorage.Transport;
 using Rebus.Config;
 using Rebus.Exceptions;
@@ -10,9 +11,10 @@ namespace Rebus.AzureStorage.Tests
 {
     public class AzureStorageFactoryBase
     {
-        public static string ConnectionString => ConnectionStringFromFileOrNull(Path.Combine(GetBaseDirectory(), "azure_storage_connection_string.txt"))
-                                                 ?? ConnectionStringFromEnvironmentVariable("rebus2_storage_connection_string")
-                                                 ?? Throw("Could not find Azure Storage connection string!");
+        public static string ConnectionString =>
+            ConnectionStringFromFileOrNull(Path.Combine(GetBaseDirectory(), "azure_storage_connection_string.txt"))
+            ?? ConnectionStringFromEnvironmentVariable("rebus2_storage_connection_string")
+            ?? Throw("Could not find Azure Storage connection string!");
 
         static string GetBaseDirectory()
         {
@@ -57,13 +59,13 @@ namespace Rebus.AzureStorage.Tests
 
         protected static CloudStorageAccount StorageAccount => CloudStorageAccount.Parse(ConnectionString);
 
-        protected static void DropTable(string tableName)
-        {
-            var client = StorageAccount.CreateCloudTableClient();
-            var table = client.GetTableReference(tableName);
-            
-            AsyncHelpers.RunSync(() => table.DeleteIfExistsAsync());
-        }
+        //protected static void DropTable(string tableName)
+        //{
+        //    var client = StorageAccount.CreateCloudTableClient();
+        //    var table = client.GetTableReference(tableName);
+
+        //    AsyncHelpers.RunSync(() => table.DeleteIfExistsAsync());
+        //}
 
         protected static void DropContainer(string containerName)
         {

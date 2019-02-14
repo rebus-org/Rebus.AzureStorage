@@ -46,9 +46,12 @@
 
 * Make message visibility timeout configurable - thanks [micdah]
 
-## 5.0.0
+## 5.0.1
 
-* Update WindowsAzure.Storage dependency to 9.3.3 and Rebus dependency to 5.0.0
+* Update to new storage libs (9.4.2) and Rebus dependency to 5.0.0. 
+* Package now targets .NET 4.5.2 and .NET Standard 2.0.
+* Remove table storage-based subscription storage, because table storage 
+
 
 ---
 

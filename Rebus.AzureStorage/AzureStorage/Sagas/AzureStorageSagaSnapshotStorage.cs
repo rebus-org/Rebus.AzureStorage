@@ -7,7 +7,6 @@ using Microsoft.WindowsAzure.Storage.Blob;
 using Microsoft.WindowsAzure.Storage.RetryPolicies;
 using Newtonsoft.Json;
 using Rebus.Auditing.Sagas;
-using Rebus.AzureStorage.DataBus;
 using Rebus.Logging;
 using Rebus.Sagas;
 

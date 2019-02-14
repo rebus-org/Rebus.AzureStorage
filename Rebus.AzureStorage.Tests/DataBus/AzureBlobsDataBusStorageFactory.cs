@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.WindowsAzure.Storage.Blob;
 using Rebus.AzureStorage.DataBus;
 using Rebus.DataBus;
 using Rebus.Logging;
