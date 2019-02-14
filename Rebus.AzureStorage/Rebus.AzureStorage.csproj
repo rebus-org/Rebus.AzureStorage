@@ -51,7 +51,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="rebus" Version="4.2.1" />
-    <PackageReference Include="windowsazure.storage" Version="8.7.0" />
+    <PackageReference Include="windowsazure.storage" Version="9.3.3" />
   </ItemGroup>
   <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
     <Exec Command="$(ProjectDir)..\scripts\patch_assemblyinfo.cmd $(ProjectDir)" />

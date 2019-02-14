@@ -9,6 +9,7 @@ using Rebus.Pipeline.Receive;
 using Rebus.Timeouts;
 using Rebus.Transport;
 // ReSharper disable ArgumentsStyleNamedExpression
+// ReSharper disable UnusedMember.Global
 
 namespace Rebus.Config
 {
@@ -34,9 +35,9 @@ Configure.With(...)
         /// <summary>
         /// Configures Rebus to use Azure Storage Queues to transport messages as a one-way client (i.e. will not be able to receive any messages)
         /// </summary>
-        public static void UseAzureStorageQueuesAsOneWayClient(this StandardConfigurer<ITransport> configurer, string storageAccountConnectionStringOrName, AzureStorageQueuesTransportOptions options = null)
+        public static void UseAzureStorageQueuesAsOneWayClient(this StandardConfigurer<ITransport> configurer, string storageAccountConnectionString, AzureStorageQueuesTransportOptions options = null)
         {
-            var storageAccount = AzureConfigurationHelper.GetStorageAccount(storageAccountConnectionStringOrName);
+            var storageAccount = CloudStorageAccount.Parse(storageAccountConnectionString);
 
             Register(configurer, null, storageAccount, options);
 
@@ -46,31 +47,9 @@ Configure.With(...)
         /// <summary>
         /// Configures Rebus to use Azure Storage Queues to transport messages
         /// </summary>
-        public static void UseAzureStorageQueues(this StandardConfigurer<ITransport> configurer, string storageAccountConnectionStringOrName, string inputQueueAddress, AzureStorageQueuesTransportOptions options = null)
+        public static void UseAzureStorageQueues(this StandardConfigurer<ITransport> configurer, string storageAccountConnectionString, string inputQueueAddress, AzureStorageQueuesTransportOptions options = null)
         {
-            var storageAccount = AzureConfigurationHelper.GetStorageAccount(storageAccountConnectionStringOrName);
-
-            Register(configurer, inputQueueAddress, storageAccount, options);
-        }
-
-        /// <summary>
-        /// Configures Rebus to use Azure Storage Queues to transport messages as a one-way client (i.e. will not be able to receive any messages)
-        /// </summary>
-        public static void UseAzureStorageQueuesAsOneWayClient(this StandardConfigurer<ITransport> configurer, string accountName, string keyValue, bool useHttps, AzureStorageQueuesTransportOptions options = null)
-        {
-            var storageAccount = new CloudStorageAccount(new StorageCredentials(accountName, keyValue), useHttps);
-
-            Register(configurer, null, storageAccount, options);
-
-            OneWayClientBackdoor.ConfigureOneWayClient(configurer);
-        }
-
-        /// <summary>
-        /// Configures Rebus to use Azure Storage Queues to transport messages
-        /// </summary>
-        public static void UseAzureStorageQueues(this StandardConfigurer<ITransport> configurer, string accountName, string keyValue, bool useHttps, string inputQueueAddress, AzureStorageQueuesTransportOptions options = null)
-        {
-            var storageAccount = new CloudStorageAccount(new StorageCredentials(accountName, keyValue), useHttps);
+            var storageAccount = CloudStorageAccount.Parse(storageAccountConnectionString);
 
             Register(configurer, inputQueueAddress, storageAccount, options);
         }

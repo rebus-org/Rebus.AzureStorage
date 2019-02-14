@@ -3,6 +3,7 @@ using Microsoft.WindowsAzure.Storage;
 using Rebus.AzureStorage.Subscriptions;
 using Rebus.Logging;
 using Rebus.Subscriptions;
+// ReSharper disable UnusedMember.Global
 
 namespace Rebus.Config
 {
@@ -14,9 +15,9 @@ namespace Rebus.Config
         /// <summary>
         /// Configures Rebus to store subscriptions using Azure Table Storage
         /// </summary>
-        public static void StoreInTableStorage(this StandardConfigurer<ISubscriptionStorage> configurer, string storageAccountConnectionStringOrName, string tableName = "RebusSubscriptions", bool isCentralized = false)
+        public static void StoreInTableStorage(this StandardConfigurer<ISubscriptionStorage> configurer, string storageAccountConnectionString, string tableName = "RebusSubscriptions", bool isCentralized = false)
         {
-            var cloudStorageAccount = AzureConfigurationHelper.GetStorageAccount(storageAccountConnectionStringOrName);
+            var cloudStorageAccount = CloudStorageAccount.Parse(storageAccountConnectionString);
 
             Register(configurer, tableName, cloudStorageAccount, isCentralized);
         }

@@ -73,7 +73,12 @@ namespace Rebus.AzureStorage.DataBus
                     blob.Metadata[kvp.Key] = kvp.Value;
                 }
 
-                await blob.UploadFromStreamAsync(source);
+                await blob.UploadFromStreamAsync(
+                    source: source,
+                    accessCondition: AccessCondition.GenerateEmptyCondition(),
+                    options: new BlobRequestOptions {RetryPolicy = new ExponentialRetry()},
+                    operationContext: new OperationContext()
+                );
             }
             catch (Exception exception)
             {
@@ -91,21 +96,25 @@ namespace Rebus.AzureStorage.DataBus
             {
                 var container = _client.GetContainerReference(_containerName);
 
-                var blob = await container.GetBlobReferenceFromServerAsync(blobName);
+                var blob = await container.GetBlobReferenceFromServerAsync(
+                    blobName: blobName,
+                    accessCondition: AccessCondition.GenerateEmptyCondition(),
+                    options: new BlobRequestOptions {RetryPolicy = new ExponentialRetry()},
+                    operationContext: new OperationContext()
+                );
 
                 await UpdateLastReadTime(blob);
 
-                return AsyncHelpers.GetResult(() =>
-                {
-                    var accessCondition = AccessCondition.GenerateEmptyCondition();
-                    var requestOptions = new BlobRequestOptions { RetryPolicy = new ExponentialRetry() };
-                    var operationContext = new OperationContext();
-                    return blob.OpenReadAsync(accessCondition, requestOptions, operationContext);
-                });
+                return await blob.OpenReadAsync(
+                    accessCondition: AccessCondition.GenerateEmptyCondition(),
+                    options: new BlobRequestOptions {RetryPolicy = new ExponentialRetry()},
+                    operationContext: new OperationContext()
+                );
             }
             catch (StorageException exception) when (exception.IsStatus(HttpStatusCode.NotFound))
             {
-                throw new ArgumentException($"Could not find blob named '{blobName}' in the '{_containerName}' container", exception);
+                throw new ArgumentException(
+                    $"Could not find blob named '{blobName}' in the '{_containerName}' container", exception);
             }
         }
 
@@ -125,7 +134,13 @@ namespace Rebus.AzureStorage.DataBus
             try
             {
                 var container = _client.GetContainerReference(_containerName);
-                var blob = await container.GetBlobReferenceFromServerAsync(blobName);
+
+                var blob = await container.GetBlobReferenceFromServerAsync(
+                    blobName: blobName,
+                    accessCondition: AccessCondition.GenerateEmptyCondition(),
+                    options: new BlobRequestOptions {RetryPolicy = new ExponentialRetry()},
+                    operationContext: new OperationContext()
+                );
 
                 var metadata = new Dictionary<string, string>(blob.Metadata)
                 {
@@ -140,9 +155,6 @@ namespace Rebus.AzureStorage.DataBus
             }
         }
 
-        static string GetBlobName(string id)
-        {
-            return $"data-{id.ToLowerInvariant()}.dat";
-        }
+        static string GetBlobName(string id) => $"data-{id.ToLowerInvariant()}.dat";
     }
 }

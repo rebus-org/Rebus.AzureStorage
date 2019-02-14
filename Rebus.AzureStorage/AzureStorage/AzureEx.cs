@@ -16,15 +16,14 @@ namespace Rebus.AzureStorage
 
         public static bool IsStatus(this StorageException exception, HttpStatusCode statusCode)
         {
-#if NETSTANDARD1_6
+            //var httpRequestException = exception.InnerException as System.Net.Http.HttpRequestException;
+            //return false;
 
-            var httpRequestException = exception.InnerException as System.Net.Http.HttpRequestException;
-            return false;
-#else
-            var webException = exception.InnerException as WebException;
-            var response = webException?.Response as HttpWebResponse;
-            return response?.StatusCode == statusCode;
-#endif
+            return exception.RequestInformation.HttpStatusCode == (int) statusCode;
+
+            //var webException = exception.InnerException as WebException;
+            //var response = webException?.Response as HttpWebResponse;
+            //return response?.StatusCode == statusCode;
         }
     }
 }

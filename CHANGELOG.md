@@ -46,6 +46,10 @@
 
 * Make message visibility timeout configurable - thanks [micdah]
 
+## 5.0.0
+
+* Update WindowsAzure.Storage dependency to 9.3.3
+
 ---
 
 [mattwhetton]: https://github.com/mattwhetton

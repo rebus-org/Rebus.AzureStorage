@@ -3,6 +3,7 @@ using Microsoft.WindowsAzure.Storage;
 using Rebus.AzureStorage.DataBus;
 using Rebus.DataBus;
 using Rebus.Logging;
+// ReSharper disable UnusedMember.Global
 
 namespace Rebus.Config
 {
