@@ -46,11 +46,13 @@
 
 * Make message visibility timeout configurable - thanks [micdah]
 
-## 5.0.1
+## ~~5.0.0~~
 
-* Update to new storage libs (9.4.2) and Rebus dependency to 5.0.0. 
-* Package now targets .NET 4.6.1 and .NET Standard 2.0.
-* Remove table storage-based subscription storage, because table storage is available through the Cosmos DB client lib, which is currently not compatible with Microsoft Azure Storage Blog/Queue.
+Sorry, but version 5.0.0 was unlisted from NuGet.org, when it turned out that Microsoft's new storage client libs for blobs, queues, AND tables (the new CosmosDB driver) could not live in the same application.
+
+Since the original WindowsAzure.Storage library is deprecated, and clients will continue their life in individually versioned packages, so will Rebus' implementations.
+
+Therefore: Go check out [`Rebus.AzureBlobs`](https://github.com/rebus-org/Rebus.AzureBlobs) for blob-based implementations of databus storage and saga snapshots.
 
 
 ---
