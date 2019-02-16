@@ -6,7 +6,13 @@ THIS REPO IS TO BE DEPRECATED!
 
 Check out [`Rebus.AzureBlobs`](https://github.com/rebus-org/Rebus.AzureBlobs) for blob-based implementations of databus storage and saga snapshots.
 
-Libraries for queues and table-tabed subscription storage will follow.
+Check out [`Rebus.AzureQueues`](https://github.com/rebus-org/Rebus.AzureQueues) for a storage queues-based transport implementation.
+
+Library for table-based subscription storage will follow.
+
+
+
+THIS REPO IS TO BE DEPRECATED!
 
 
 
