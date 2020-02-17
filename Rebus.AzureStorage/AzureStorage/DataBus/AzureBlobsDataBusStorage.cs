@@ -10,6 +10,8 @@ using Rebus.DataBus;
 using Rebus.Extensions;
 using Rebus.Logging;
 using Rebus.Time;
+// ReSharper disable ArgumentsStyleOther
+// ReSharper disable ArgumentsStyleNamedExpression
 
 namespace Rebus.AzureStorage.DataBus
 {
@@ -76,7 +78,7 @@ namespace Rebus.AzureStorage.DataBus
                 await blob.UploadFromStreamAsync(
                     source: source,
                     accessCondition: AccessCondition.GenerateEmptyCondition(),
-                    options: new BlobRequestOptions {RetryPolicy = new ExponentialRetry()},
+                    options: new BlobRequestOptions { RetryPolicy = new ExponentialRetry() },
                     operationContext: new OperationContext()
                 );
             }
@@ -99,7 +101,7 @@ namespace Rebus.AzureStorage.DataBus
                 var blob = await container.GetBlobReferenceFromServerAsync(
                     blobName: blobName,
                     accessCondition: AccessCondition.GenerateEmptyCondition(),
-                    options: new BlobRequestOptions {RetryPolicy = new ExponentialRetry()},
+                    options: new BlobRequestOptions { RetryPolicy = new ExponentialRetry() },
                     operationContext: new OperationContext()
                 );
 
@@ -107,7 +109,7 @@ namespace Rebus.AzureStorage.DataBus
 
                 return await blob.OpenReadAsync(
                     accessCondition: AccessCondition.GenerateEmptyCondition(),
-                    options: new BlobRequestOptions {RetryPolicy = new ExponentialRetry()},
+                    options: new BlobRequestOptions { RetryPolicy = new ExponentialRetry() },
                     operationContext: new OperationContext()
                 );
             }
@@ -122,7 +124,13 @@ namespace Rebus.AzureStorage.DataBus
         {
             blob.Metadata[MetadataKeys.ReadTime] = RebusTime.Now.ToString("O");
 
-            await blob.SetMetadataAsync();
+            var ignoreRaceConditionInThisCase = AccessCondition.GenerateEmptyCondition();
+
+            await blob.SetMetadataAsync(
+                accessCondition: ignoreRaceConditionInThisCase,
+                options: new BlobRequestOptions { RetryPolicy = new ExponentialRetry() },
+                operationContext: new OperationContext()
+            );
         }
 
         /// <summary>
@@ -138,7 +146,7 @@ namespace Rebus.AzureStorage.DataBus
                 var blob = await container.GetBlobReferenceFromServerAsync(
                     blobName: blobName,
                     accessCondition: AccessCondition.GenerateEmptyCondition(),
-                    options: new BlobRequestOptions {RetryPolicy = new ExponentialRetry()},
+                    options: new BlobRequestOptions { RetryPolicy = new ExponentialRetry() },
                     operationContext: new OperationContext()
                 );
 
